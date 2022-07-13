@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -22,7 +23,7 @@ namespace Analyzer1
         private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
         private const string Category = "Naming";
 
-        private static readonly DiagnosticDescriptor Rule 
+        private static readonly DiagnosticDescriptor Rule
             = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
@@ -34,22 +35,53 @@ namespace Analyzer1
 
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
+
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+
+            //context.RegisterSymbolAction(AnalyzeNamespace, SymbolKind.Namespace);
+
+            //context.RegisterSyntaxTreeAction(AnalyzeTree);
         }
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            // TODO: Replace the following code with your own analysis, generating Diagnostic objects for any issues you find
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
-            // Find just those named type symbols with names containing lowercase letters.
-            if (namedTypeSymbol.Name.ToCharArray().Any(char.IsLower))
+            var currentDoc = namedTypeSymbol.GetDocumentationCommentXml();
+
+            if (string.IsNullOrEmpty(currentDoc))
             {
-                // For all such symbols, produce a diagnostic.
-                var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
+                var descriptor = new DiagnosticDescriptor(DiagnosticId,
+                    "missing class documentation",
+                    "Class '{0}' doesn't have a documentation",
+                    Category, DiagnosticSeverity.Error, true, "Public class must have a documentation");
+
+                var diagnostic = Diagnostic.Create(descriptor, namedTypeSymbol.Locations.FirstOrDefault(), namedTypeSymbol.Name);
 
                 context.ReportDiagnostic(diagnostic);
             }
         }
+
+        //private void AnalyzeTree(SyntaxTreeAnalysisContext context)
+        //{
+        //    var filePath = context.Tree.FilePath;
+        //}
+
+        //private static void AnalyzeNamespace(SymbolAnalysisContext context)
+        //{
+        //    var descriptor = new DiagnosticDescriptor(DiagnosticId, "wrong namespace", "Namespace '{0}' is in wrong file",
+        //        Category, DiagnosticSeverity.Error, true, "Namespace should be in a valid file");
+
+        //    var space = (INamespaceSymbol)context.Symbol;
+
+
+        //    // 
+        //    if (space.Name != context.Options.ToString())
+        //    {
+        //        var diag = Diagnostic.Create(descriptor, space.Locations.FirstOrDefault(), space.Name);
+
+        //        context.ReportDiagnostic(diag);
+        //    }
+        //}
     }
 }
