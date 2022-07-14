@@ -37,6 +37,8 @@ namespace Analyzer1
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
 
             //context.RegisterSymbolAction(AnalyzeNamespace, SymbolKind.Namespace);
 
@@ -45,9 +47,9 @@ namespace Analyzer1
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+            var symbol = (ISymbol)context.Symbol;
 
-            var currentDoc = namedTypeSymbol.GetDocumentationCommentXml();
+            var currentDoc = symbol.GetDocumentationCommentXml();
 
             if (string.IsNullOrEmpty(currentDoc))
             {
@@ -56,11 +58,30 @@ namespace Analyzer1
                     "Class '{0}' doesn't have a documentation",
                     Category, DiagnosticSeverity.Error, true, "Public class must have a documentation");
 
-                var diagnostic = Diagnostic.Create(descriptor, namedTypeSymbol.Locations.FirstOrDefault(), namedTypeSymbol.Name);
+                var diagnostic = Diagnostic.Create(descriptor, symbol.Locations.FirstOrDefault(), symbol.Name);
 
                 context.ReportDiagnostic(diagnostic);
             }
         }
+
+        //private static void AnalyzeMethod(SymbolAnalysisContext context)
+        //{
+        //    var namedTypeSymbol = (IMethodSymbol)context.Symbol;
+
+        //    var currentDoc = namedTypeSymbol.GetDocumentationCommentXml();
+
+        //    if (string.IsNullOrEmpty(currentDoc))
+        //    {
+        //        var descriptor = new DiagnosticDescriptor(DiagnosticId,
+        //            "missing class documentation",
+        //            "Class '{0}' doesn't have a documentation",
+        //            Category, DiagnosticSeverity.Error, true, "Public class must have a documentation");
+
+        //        var diagnostic = Diagnostic.Create(descriptor, namedTypeSymbol.Locations.FirstOrDefault(), namedTypeSymbol.Name);
+
+        //        context.ReportDiagnostic(diagnostic);
+        //    }
+        //}
 
         //private void AnalyzeTree(SyntaxTreeAnalysisContext context)
         //{
