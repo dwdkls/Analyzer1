@@ -20,7 +20,7 @@ namespace Analyzer1.Test
 
         //Diagnostic and CodeFix both triggered and checked for
         [TestMethod]
-        public async Task TestMethod2()
+        public async Task TestAnalyze()
         {
             var test = @"
 public class {|#0:TypeName|}
@@ -37,10 +37,30 @@ public static class TypeName
     {
     }
 }";
-
             var expected = VerifyCS.Diagnostic("Analyzer1").WithLocation(0).WithArguments("TypeName");
-            //await VerifyCS.VerifyAnalyzerAsync(test, expected);
-            await VerifyCS.VerifyCodeFixAsync(test, fixtest);
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+
+        [TestMethod]
+        public async Task TestFix()
+        {
+            var test = @"
+public class TypeName
+{
+    public static void Test()
+    {
+    }
+}";
+
+            var fixtest = @"
+public static class TypeName
+{
+    public static void Test()
+    {
+    }
+}";
+            var expected = VerifyCS.Diagnostic("Analyzer1").WithSpan(2, 14, 2, 22).WithArguments("TypeName");
+            await VerifyCS.VerifyCodeFixAsync(test, expected, fixtest);
         }
     }
 }
