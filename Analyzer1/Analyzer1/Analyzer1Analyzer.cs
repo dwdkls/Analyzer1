@@ -18,13 +18,16 @@ namespace Analyzer1
 
         // You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
         // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Localizing%20Analyzers.md for more on localization
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
+        private static readonly string Title = "missing class documentation";
+        //new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly string MessageFormat = "Class '{0}' doesn't have a documentation";
+        //= new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString Description = "Public class must have a documentation";
+            //new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
         private const string Category = "Naming";
 
         private static readonly DiagnosticDescriptor Rule
-            = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+            = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
 
@@ -37,8 +40,8 @@ namespace Analyzer1
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
 
             //context.RegisterSymbolAction(AnalyzeNamespace, SymbolKind.Namespace);
 
@@ -54,9 +57,9 @@ namespace Analyzer1
             if (string.IsNullOrEmpty(currentDoc))
             {
                 var descriptor = new DiagnosticDescriptor(DiagnosticId,
-                    "missing class documentation",
-                    "Class '{0}' doesn't have a documentation",
-                    Category, DiagnosticSeverity.Error, true, "Public class must have a documentation");
+                    Title,
+                    MessageFormat,
+                    Category, DiagnosticSeverity.Error, true, Description);
 
                 var diagnostic = Diagnostic.Create(descriptor, symbol.Locations.FirstOrDefault(), symbol.Name);
 
