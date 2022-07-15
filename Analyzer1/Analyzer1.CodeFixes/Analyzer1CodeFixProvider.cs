@@ -71,7 +71,7 @@ namespace Analyzer1
         private async Task<Document> AddMissingDocumentation(Document document, TypeDeclarationSyntax declaration, CancellationToken cancellationToken)
         {
             //Debugger.Launch();
-            
+
             var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             // Generate the documentation text
@@ -79,25 +79,71 @@ namespace Analyzer1
             var text = identifierToken.Text.ToUpperInvariant();
 
             // Get the symbol representing the type to be renamed.
-            var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-            var typeSymbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-
-            var staticKeyWord = SyntaxFactory.Token(SyntaxKind.StaticKeyword).WithTrailingTrivia(SyntaxFactory.Space);
-            var newModifiers = declaration.Modifiers.Add(staticKeyWord);
-            var newMethodDeclaration = declaration.WithModifiers(newModifiers);
-
-            // Replace the old local declaration with the new local declaration.
-            var newRoot = syntaxRoot.ReplaceNode(declaration, newMethodDeclaration);
+            //var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+            //var typeSymbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
 
 
-            var originalSolution = document.Project.Solution;
-            var optionSet = originalSolution.Workspace.Options;
+            //CSharpSyntaxTree.ParseText
 
-            var newDocument = document.WithSyntaxRoot(newRoot);
+            //DocumentationCommentTriviaSyntax.DeserializeFrom()
 
+
+            XmlTextSyntax x1 = SyntaxFactory.XmlText()
+                .WithTextTokens(SyntaxFactory.TokenList(
+                    SyntaxFactory.XmlTextLiteral(
+                        SyntaxFactory.TriviaList(SyntaxFactory.DocumentationCommentExterior("///")), " ", " ", SyntaxFactory.TriviaList())));
+
+            XmlElementSyntax x2 = SyntaxFactory.XmlElement(
+                            SyntaxFactory.XmlElementStartTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))),
+                            SyntaxFactory.XmlElementEndTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))))
+                        .WithContent(SyntaxFactory.SingletonList<XmlNodeSyntax>(
+                            SyntaxFactory.XmlText().WithTextTokens(SyntaxFactory.TokenList(
+                                SyntaxFactory.XmlTextLiteral(SyntaxFactory.TriviaList(), "test", "tost", SyntaxFactory.TriviaList())))));
+
+            XmlTextSyntax x3 = SyntaxFactory.XmlText()
+                        .WithTextTokens(SyntaxFactory.TokenList(
+                            SyntaxFactory.XmlTextNewLine(SyntaxFactory.TriviaList(), Environment.NewLine, Environment.NewLine, SyntaxFactory.TriviaList())));
+
+            DocumentationCommentTriviaSyntax testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
+                SyntaxKind.SingleLineDocumentationCommentTrivia, SyntaxFactory.List(new XmlNodeSyntax[] { x1, x2, x3 }));
+
+            string sTestDocumentation = testDocumentation.ToFullString();
+
+            var newModifiers = SyntaxFactory.TokenList(
+                    SyntaxFactory.Token(
+                        SyntaxFactory.TriviaList(SyntaxFactory.Trivia(testDocumentation)),
+                        SyntaxKind.PublicKeyword, // original 1st token
+                        SyntaxFactory.TriviaList(SyntaxFactory.Space)
+                    ));
+
+            string sOldModifiers = declaration.Modifiers.ToFullString();
+            string sNewModifiers = newModifiers.ToFullString();
+
+            TypeDeclarationSyntax newMethodNode = declaration.WithModifiers(newModifiers);
+
+            string oldMethod = declaration.ToFullString();
+            string sNewMethod = newMethodNode.ToFullString();
+
+            SyntaxNode syntaxNode = syntaxRoot.ReplaceNode(declaration, newMethodNode);
+
+            var newDocument = document.WithSyntaxRoot(syntaxNode);
             return newDocument;
 
-            #region stuff
+            #region adding static
+            //var staticKeyWord = SyntaxFactory.Token(SyntaxKind.StaticKeyword).WithTrailingTrivia(SyntaxFactory.Space);
+            //var newModifiers = declaration.Modifiers.Add(staticKeyWord);
+            //var newMethodDeclaration = declaration.WithModifiers(newModifiers);
+            //var newRoot = syntaxRoot.ReplaceNode(declaration, newMethodDeclaration);
+            //var originalSolution = document.Project.Solution;
+            //var optionSet = originalSolution.Workspace.Options;
+
+            //var newDocument = document.WithSyntaxRoot(newRoot);
+
+            //return newDocument;
+            #endregion
+
+
+            #region other stuff
             //var x = SyntaxFactory.DocumentationCommentTrivia(SyntaxKind.SingleLineDocumentationCommentTrivia, new SyntaxList<XmlNodeSyntax>())
             //    .WithLeadingTrivia(SyntaxFactory.DocumentationCommentExterior("/// "))
             //    .WithTrailingTrivia(SyntaxFactory.EndOfLine(text));
@@ -119,60 +165,8 @@ namespace Analyzer1
             //                SyntaxFactory.Token(
             //                    SyntaxKind.SemicolonToken));
 
-            //var testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
-            //    SyntaxKind.SingleLineDocumentationCommentTrivia,
-            //    SyntaxFactory.List<XmlNodeSyntax>(
-            //        new XmlNodeSyntax[]{
-            //            SyntaxFactory.XmlText()
-            //            .WithTextTokens(
-            //                SyntaxFactory.TokenList(
-            //                    SyntaxFactory.XmlTextLiteral(
-            //                        SyntaxFactory.TriviaList(
-            //                            SyntaxFactory.DocumentationCommentExterior("///")),
-            //                        " ",
-            //                        " ",
-            //                        SyntaxFactory.TriviaList()))),
-            //            SyntaxFactory.XmlElement(
-            //                SyntaxFactory.XmlElementStartTag(
-            //                    SyntaxFactory.XmlName(
-            //                        SyntaxFactory.Identifier("summary"))),
-            //                SyntaxFactory.XmlElementEndTag(
-            //                    SyntaxFactory.XmlName(
-            //                        SyntaxFactory.Identifier("summary"))))
-            //            .WithContent(
-            //                SyntaxFactory.SingletonList<XmlNodeSyntax>(
-            //                    SyntaxFactory.XmlText()
-            //                    .WithTextTokens(
-            //                        SyntaxFactory.TokenList(
-            //                            SyntaxFactory.XmlTextLiteral(
-            //                                SyntaxFactory.TriviaList(),
-            //                                "test",
-            //                                "test",
-            //                                SyntaxFactory.TriviaList()))))),
-            //            SyntaxFactory.XmlText()
-            //            .WithTextTokens(
-            //                SyntaxFactory.TokenList(
-            //                    SyntaxFactory.XmlTextNewLine(
-            //                        SyntaxFactory.TriviaList(),
-            //                        "\n",
-            //                        "\n",
-            //                        SyntaxFactory.TriviaList())))}));
 
 
-            //TypeDeclarationSyntax newMethodNode = declaration.WithModifiers(
-            //    SyntaxFactory.TokenList(
-            //        new[]{
-
-            //            SyntaxFactory.Token(
-            //                SyntaxFactory.TriviaList(
-            //                    SyntaxFactory.Trivia(testDocumentation)), // xmldoc
-            //                    SyntaxKind.PublicKeyword, // original 1st token
-            //                    SyntaxFactory.TriviaList()),
-            //            SyntaxFactory.Token(SyntaxKind.StaticKeyword)}));
-
-            //SyntaxNode syntaxNode = syntaxRoot.ReplaceNode(declaration, newMethodNode);
-
-            //var newDocument = document.WithSyntaxRoot(syntaxNode);
 
 
 
@@ -217,24 +211,24 @@ namespace Analyzer1
             #endregion
         }
 
-        private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
-        {
-            // Compute new uppercase name.
-            var identifierToken = typeDecl.Identifier;
-            var newName = identifierToken.Text.ToUpperInvariant();
+        //private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        //{
+        //    // Compute new uppercase name.
+        //    var identifierToken = typeDecl.Identifier;
+        //    var newName = identifierToken.Text.ToUpperInvariant();
 
-            // Get the symbol representing the type to be renamed.
-            var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-            var typeSymbol = semanticModel.GetDeclaredSymbol(typeDecl, cancellationToken);
+        //    // Get the symbol representing the type to be renamed.
+        //    var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+        //    var typeSymbol = semanticModel.GetDeclaredSymbol(typeDecl, cancellationToken);
 
-            // Produce a new solution that has all references to that type renamed, including the declaration.
-            var originalSolution = document.Project.Solution;
-            var optionSet = originalSolution.Workspace.Options;
-            var newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, typeSymbol, newName, optionSet, cancellationToken).ConfigureAwait(false);
+        //    // Produce a new solution that has all references to that type renamed, including the declaration.
+        //    var originalSolution = document.Project.Solution;
+        //    var optionSet = originalSolution.Workspace.Options;
+        //    var newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, typeSymbol, newName, optionSet, cancellationToken).ConfigureAwait(false);
 
-            // Return the new solution with the now-uppercase type name.
-            return newSolution;
-        }
+        //    // Return the new solution with the now-uppercase type name.
+        //    return newSolution;
+        //}
     }
 
     internal class CodeFixResources
