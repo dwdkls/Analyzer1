@@ -22,7 +22,7 @@ namespace Analyzer1
         //new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
         private static readonly string MessageFormat = "Class '{0}' doesn't have a documentation";
         //= new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString Description = "Public class must have a documentation";
+        private static readonly string Description = "Public class must have a documentation";
             //new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
         private const string Category = "Naming";
 

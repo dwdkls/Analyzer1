@@ -29,14 +29,6 @@ public class {|#0:TypeName|}
     {
     }
 }";
-
-            var fixtest = @"
-public static class TypeName
-{
-    public static void Test()
-    {
-    }
-}";
             var expected = VerifyCS.Diagnostic("Analyzer1").WithLocation(0).WithArguments("TypeName");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
@@ -53,7 +45,8 @@ public class TypeName
 }";
 
             var fixtest = @"
-public static class TypeName
+/// <summary>test</summary>
+public class TypeName
 {
     public static void Test()
     {
