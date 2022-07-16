@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Rename;
 using Microsoft.CodeAnalysis.Text;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
@@ -17,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace Analyzer1
 {
+
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(Analyzer1CodeFixProvider)), Shared]
     public class Analyzer1CodeFixProvider : CodeFixProvider
     {
@@ -25,11 +25,11 @@ namespace Analyzer1
             get { return ImmutableArray.Create(Analyzer1Analyzer.DiagnosticId); }
         }
 
-        //public sealed override FixAllProvider GetFixAllProvider()
-        //{
-        //    // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-        //    return WellKnownFixAllProviders.BatchFixer;
-        //}
+        public sealed override FixAllProvider GetFixAllProvider()
+        {
+            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
+            return WellKnownFixAllProviders.BatchFixer;
+        }
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -82,31 +82,13 @@ namespace Analyzer1
             //var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
             //var typeSymbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
 
-
             //CSharpSyntaxTree.ParseText
 
             //DocumentationCommentTriviaSyntax.DeserializeFrom()
 
+            var testDocumentation = XmlDocumentationGenerator.ForClassName(declaration.Identifier.Text);
 
-            XmlTextSyntax x1 = SyntaxFactory.XmlText()
-                .WithTextTokens(SyntaxFactory.TokenList(
-                    SyntaxFactory.XmlTextLiteral(
-                        SyntaxFactory.TriviaList(SyntaxFactory.DocumentationCommentExterior("///")), " ", " ", SyntaxFactory.TriviaList())));
-
-            XmlElementSyntax x2 = SyntaxFactory.XmlElement(
-                            SyntaxFactory.XmlElementStartTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))),
-                            SyntaxFactory.XmlElementEndTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))))
-                        .WithContent(SyntaxFactory.SingletonList<XmlNodeSyntax>(
-                            SyntaxFactory.XmlText().WithTextTokens(SyntaxFactory.TokenList(
-                                SyntaxFactory.XmlTextLiteral(SyntaxFactory.TriviaList(), "test", "tost", SyntaxFactory.TriviaList())))));
-
-            XmlTextSyntax x3 = SyntaxFactory.XmlText()
-                        .WithTextTokens(SyntaxFactory.TokenList(
-                            SyntaxFactory.XmlTextNewLine(SyntaxFactory.TriviaList(), Environment.NewLine, Environment.NewLine, SyntaxFactory.TriviaList())));
-
-            DocumentationCommentTriviaSyntax testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
-                SyntaxKind.SingleLineDocumentationCommentTrivia, SyntaxFactory.List(new XmlNodeSyntax[] { x1, x2, x3 }));
-
+            // this is the goal: /// <summary>test</summary>
             string sTestDocumentation = testDocumentation.ToFullString();
 
             var newModifiers = SyntaxFactory.TokenList(
@@ -231,7 +213,7 @@ namespace Analyzer1
         //}
     }
 
-    internal class CodeFixResources
+    internal static class CodeFixResources
     {
         public static string CodeFixTitle = "Generate documentation";
     }
