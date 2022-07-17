@@ -50,15 +50,14 @@ namespace Analyzer1
             //SyntaxFactory.XmlSummaryElement()
 
             var testDocumentation = SyntaxFactory.DocumentationComment(
-                    SyntaxFactory.XmlElement("summary", 
-                        SyntaxFactory.List(new List<XmlNodeSyntax>(new[]{
-                            SyntaxFactory.XmlText("")
-                                .AddTextTokens(
+                    SyntaxFactory.XmlElement("summary", SyntaxFactory.List(new List<XmlNodeSyntax>(new[] {
+                                SyntaxFactory.XmlText().AddTextTokens(
                                     SyntaxFactory.XmlTextNewLine(Environment.NewLine, true))
-                                        .AddTextTokens(
-                                                SyntaxFactory.XmlTextNewLine($"{summaryContent}{Environment.NewLine}", true))
+                                        .AddTextTokens(SyntaxFactory.XmlTextNewLine($"{summaryContent}{Environment.NewLine}", true))
                                     })
-                                    )));
+                        )
+                    )
+                );
 
 
             //DocumentationCommentTriviaSyntax testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
