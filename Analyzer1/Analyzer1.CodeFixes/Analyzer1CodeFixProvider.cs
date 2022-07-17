@@ -91,23 +91,33 @@ namespace Analyzer1
             // this is the goal: /// <summary>test</summary>
             string sTestDocumentation = testDocumentation.ToFullString();
 
-            var newModifiers = SyntaxFactory.TokenList(
-                    SyntaxFactory.Token(
-                        SyntaxFactory.TriviaList(SyntaxFactory.Trivia(testDocumentation)),
-                        SyntaxKind.PublicKeyword, // original 1st token
-                        SyntaxFactory.TriviaList(SyntaxFactory.Space)
-                    ));
+            //var newModifiers = SyntaxFactory.TokenList(
+            //        SyntaxFactory.Token(
+            //            SyntaxFactory.TriviaList(SyntaxFactory.Trivia(testDocumentation)),
+            //            SyntaxKind.PublicKeyword, // original 1st token
+            //            SyntaxFactory.TriviaList(SyntaxFactory.Space)
+            //        ));
 
-            string sOldModifiers = declaration.Modifiers.ToFullString();
-            string sNewModifiers = newModifiers.ToFullString();
+            //string sOldModifiers = declaration.Modifiers.ToFullString();
+            //string sNewModifiers = newModifiers.ToFullString();
 
-            TypeDeclarationSyntax newMethodNode = declaration.WithModifiers(newModifiers);
+            //TypeDeclarationSyntax newMethodNode = declaration.WithModifiers(newModifiers);
+
+
+            SyntaxList<DocumentationCommentTriviaSyntax> list = SyntaxFactory.List(new[] { testDocumentation });
+
+
+
+            //var tt = new SyntaxTrivia();
+
+            var yy = SyntaxFactory.Trivia(testDocumentation);
+
+            TypeDeclarationSyntax newDeclaration = declaration.WithLeadingTrivia(yy);
 
             string oldMethod = declaration.ToFullString();
-            string sNewMethod = newMethodNode.ToFullString();
+            string sNewMethod = newDeclaration.ToFullString();
 
-            SyntaxNode syntaxNode = syntaxRoot.ReplaceNode(declaration, newMethodNode);
-
+            var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
             var newDocument = document.WithSyntaxRoot(syntaxNode);
             return newDocument;
 
@@ -123,7 +133,6 @@ namespace Analyzer1
 
             //return newDocument;
             #endregion
-
 
             #region other stuff
             //var x = SyntaxFactory.DocumentationCommentTrivia(SyntaxKind.SingleLineDocumentationCommentTrivia, new SyntaxList<XmlNodeSyntax>())
