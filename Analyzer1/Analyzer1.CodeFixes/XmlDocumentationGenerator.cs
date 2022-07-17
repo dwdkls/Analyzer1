@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace Analyzer1
 {
+    /// <summary>
+    /// super generator
+    /// </summary>
     public static class XmlDocumentationGenerator
     {
         public static DocumentationCommentTriviaSyntax ForClassName(string className)
@@ -49,15 +52,24 @@ namespace Analyzer1
 
             //SyntaxFactory.XmlSummaryElement()
 
+
             var testDocumentation = SyntaxFactory.DocumentationComment(
-                    SyntaxFactory.XmlElement("summary", SyntaxFactory.List(new List<XmlNodeSyntax>(new[] {
-                                SyntaxFactory.XmlText().AddTextTokens(
-                                    SyntaxFactory.XmlTextNewLine(Environment.NewLine, true))
-                                        .AddTextTokens(SyntaxFactory.XmlTextNewLine($"{summaryContent}{Environment.NewLine}", true))
-                                    })
-                        )
-                    )
-                );
+                SyntaxFactory.XmlSummaryElement(
+                    SyntaxFactory.XmlNewLine(Environment.NewLine),
+                    SyntaxFactory.XmlText(className),
+                    SyntaxFactory.XmlNewLine(Environment.NewLine)
+                )).WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+
+
+            //var testDocumentation = SyntaxFactory.DocumentationComment(
+            //        SyntaxFactory.XmlElement("summary", SyntaxFactory.List(new List<XmlNodeSyntax>(new[] {
+            //                    SyntaxFactory.XmlText().AddTextTokens(
+            //                        SyntaxFactory.XmlTextNewLine(Environment.NewLine, true))
+            //                            .AddTextTokens(SyntaxFactory.XmlTextNewLine($"{summaryContent}{Environment.NewLine}", true))
+            //                        })
+            //            )
+            //        )
+            //    );
 
 
             //DocumentationCommentTriviaSyntax testDocumentation = SyntaxFactory.DocumentationCommentTrivia(

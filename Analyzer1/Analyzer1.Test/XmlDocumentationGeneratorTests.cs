@@ -10,7 +10,8 @@ namespace Analyzer1.Test
         {
             string expected = @"/// <summary>
 /// MySuperClass
-/// </summary>";
+/// </summary>
+";
 
             var actual = XmlDocumentationGenerator.ForClassName("MySuperClass").ToFullString();
 
