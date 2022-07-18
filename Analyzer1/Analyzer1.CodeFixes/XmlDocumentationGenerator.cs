@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,19 +21,6 @@ namespace Analyzer1
                 .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
         }
 
-
-        //public static DocumentationCommentTriviaSyntax ForClass(string className)
-        //{
-        //    var summary = SyntaxFactory.XmlSummaryElement(
-        //        SyntaxFactory.XmlNewLine(Environment.NewLine),
-        //        SyntaxFactory.XmlText(className),
-        //        SyntaxFactory.XmlNewLine(Environment.NewLine)
-        //    );
-
-        //    return SyntaxFactory.DocumentationComment(summary)
-        //        .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-        //}
-
         /* var testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
                 SyntaxKind.SingleLineDocumentationCommentTrivia, SyntaxFactory.List(new XmlNodeSyntax[] { SyntaxFactory.XmlText()
                 .WithTextTokens(SyntaxFactory.TokenList(
@@ -51,17 +39,38 @@ namespace Analyzer1
             return testDocumentation;
         */
 
-
-        public static DocumentationCommentTriviaSyntax ForMethod(string methodName, List<string> parameterNames)
+        public static DocumentationCommentTriviaSyntax ForMethod(MethodDeclarationSyntax declaration)
         {
             var summary = SyntaxFactory.XmlSummaryElement(
-                SyntaxFactory.XmlNewLine(Environment.NewLine),
-                SyntaxFactory.XmlText(methodName),
-                SyntaxFactory.XmlNewLine(Environment.NewLine)
+                   SyntaxFactory.XmlNewLine(Environment.NewLine),
+                   SyntaxFactory.XmlText(declaration.Identifier.Text),
+                   SyntaxFactory.XmlNewLine(Environment.NewLine)
             );
 
-            return SyntaxFactory.DocumentationComment(summary)
-                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+            if (!declaration.ReturnType.IsNotNull)
+            {
+                var returnType = ((IdentifierNameSyntax)declaration.ReturnType).Identifier;
+                var typeName = returnType.ValueText;
+                var article = IsVovel(typeName[0]) ? "An" : "A";
+
+                var returns = SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{article} {typeName} value."));
+
+                return SyntaxFactory.DocumentationComment(
+                    summary,
+                    SyntaxFactory.XmlNewLine(Environment.NewLine),
+                    returns)
+                    .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+            }
+            else
+            {
+                return SyntaxFactory.DocumentationComment(summary)
+                    .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+            }
+        }
+
+        private static bool IsVovel(char c)
+        {
+            return "aeiouAEIOU".IndexOf(c) >= 0;
         }
     }
 }

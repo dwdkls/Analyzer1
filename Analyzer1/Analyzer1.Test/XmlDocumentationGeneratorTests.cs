@@ -10,10 +10,10 @@ namespace Analyzer1.Test
         [Fact]
         public void ForClass_GenerateMultilineDocumentation()
         {
-            var typeDeclaration = SyntaxFactory.TypeDeclaration(SyntaxKind.ClassDeclaration, "MySuperClass");
+            var typeDeclaration = SyntaxFactory.TypeDeclaration(SyntaxKind.ClassDeclaration, "MyTestClass");
 
             string expected = @"/// <summary>
-/// MySuperClass
+/// MyTestClass
 /// </summary>
 ";
 
@@ -22,18 +22,73 @@ namespace Analyzer1.Test
             actual.Should().Be(expected);
         }
 
-//        [Fact]
-//        public void ForMethod_GenerateMultilineDocumentation()
-//        {
-//            string expected = @"/// <summary>
-///// MySuperMethod
-///// </summary>
-//";
+        [Fact]
+        public void ForVoidMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        {
+            TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
 
-//            var actual = XmlDocumentationGenerator.ForClass("MySuperClass").ToFullString();
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(ts, "MyTestMethod");
 
-//            actual.Should().Be(expected);
-//        }
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ForIntMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        {
+            var returnType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("int"));
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>An int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ForStringMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        {
+            var returnType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("string"));
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A string value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ForMyClassMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        {
+            var returnType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("MyClass"));
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A MyClass value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
     }
 }
 
