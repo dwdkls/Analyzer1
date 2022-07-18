@@ -86,7 +86,7 @@ namespace Analyzer1
 
             //DocumentationCommentTriviaSyntax.DeserializeFrom()
 
-            var testDocumentation = XmlDocumentationGenerator.ForClassName(declaration.Identifier.Text);
+            var testDocumentation = XmlDocumentationGenerator.ForClass(declaration);
 
             // this is the goal: /// <summary>test</summary>
             string sTestDocumentation = testDocumentation.ToFullString();

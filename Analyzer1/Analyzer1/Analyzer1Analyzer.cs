@@ -40,7 +40,7 @@ namespace Analyzer1
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
-            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
             //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
 
             //context.RegisterSymbolAction(AnalyzeNamespace, SymbolKind.Namespace);
@@ -50,7 +50,7 @@ namespace Analyzer1
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            var symbol = (ISymbol)context.Symbol;
+            var symbol = context.Symbol;
 
             var currentDoc = symbol.GetDocumentationCommentXml();
 

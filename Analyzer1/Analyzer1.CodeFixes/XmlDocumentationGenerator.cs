@@ -1,28 +1,37 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Analyzer1
 {
-    /// <summary>
-    /// super generator
-    /// </summary>
     public static class XmlDocumentationGenerator
     {
-        public static DocumentationCommentTriviaSyntax ForClassName(string className)
+        public static DocumentationCommentTriviaSyntax ForClass(TypeDeclarationSyntax declaration)
         {
             var summary = SyntaxFactory.XmlSummaryElement(
                 SyntaxFactory.XmlNewLine(Environment.NewLine),
-                SyntaxFactory.XmlText(className),
+                SyntaxFactory.XmlText(declaration.Identifier.Text),
                 SyntaxFactory.XmlNewLine(Environment.NewLine)
             );
 
-            var doc = SyntaxFactory.DocumentationComment(summary)
+            return SyntaxFactory.DocumentationComment(summary)
                 .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-
-            return doc;
         }
+
+
+        //public static DocumentationCommentTriviaSyntax ForClass(string className)
+        //{
+        //    var summary = SyntaxFactory.XmlSummaryElement(
+        //        SyntaxFactory.XmlNewLine(Environment.NewLine),
+        //        SyntaxFactory.XmlText(className),
+        //        SyntaxFactory.XmlNewLine(Environment.NewLine)
+        //    );
+
+        //    return SyntaxFactory.DocumentationComment(summary)
+        //        .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        //}
 
         /* var testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
                 SyntaxKind.SingleLineDocumentationCommentTrivia, SyntaxFactory.List(new XmlNodeSyntax[] { SyntaxFactory.XmlText()
@@ -41,5 +50,18 @@ namespace Analyzer1
 
             return testDocumentation;
         */
+
+
+        public static DocumentationCommentTriviaSyntax ForMethod(string methodName, List<string> parameterNames)
+        {
+            var summary = SyntaxFactory.XmlSummaryElement(
+                SyntaxFactory.XmlNewLine(Environment.NewLine),
+                SyntaxFactory.XmlText(methodName),
+                SyntaxFactory.XmlNewLine(Environment.NewLine)
+            );
+
+            return SyntaxFactory.DocumentationComment(summary)
+                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        }
     }
 }
