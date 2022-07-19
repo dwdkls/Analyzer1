@@ -53,6 +53,8 @@ namespace Analyzer1
 
             if (returnTypeName != "void")
             {
+                bool IsVovel(char c) => "aeiouAEIOU".IndexOf(c) >= 0;
+
                 var article = IsVovel(returnTypeName[0]) ? "An" : "A";
 
                 var returns = SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{article} {returnTypeName} value."));
@@ -68,11 +70,6 @@ namespace Analyzer1
                 return SyntaxFactory.DocumentationComment(summary)
                     .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
             }
-        }
-
-        private static bool IsVovel(char c)
-        {
-            return "aeiouAEIOU".IndexOf(c) >= 0;
         }
     }
 }

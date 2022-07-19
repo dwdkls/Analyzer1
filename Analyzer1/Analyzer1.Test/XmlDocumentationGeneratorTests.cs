@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
@@ -83,6 +84,23 @@ namespace Analyzer1.Test
 /// MyTestMethod
 /// </summary>
 /// <returns>A MyClass value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ForVoidMethodWithParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        {
+            TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(ts, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
 ";
 
             var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
