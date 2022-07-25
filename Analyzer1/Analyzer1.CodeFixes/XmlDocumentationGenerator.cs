@@ -47,15 +47,14 @@ namespace Analyzer1
                    SyntaxFactory.XmlNewLine(Environment.NewLine)
             );
 
-            var returnType = ((IdentifierNameSyntax)declaration.ReturnType).Identifier;
-            var returnTypeName = returnType.ValueText;
-
+            var returnType = declaration.ReturnType as PredefinedTypeSyntax;
+            var returnTypeName = returnType.Keyword.ValueText;
 
             if (returnTypeName != "void")
             {
-                bool IsVovel(char c) => "aeiouAEIOU".IndexOf(c) >= 0;
+                bool IsVowel(char c) => "aeiouAEIOU".IndexOf(c) >= 0;
 
-                var article = IsVovel(returnTypeName[0]) ? "An" : "A";
+                var article = IsVowel(returnTypeName[0]) ? "An" : "A";
 
                 var returns = SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{article} {returnTypeName} value."));
 

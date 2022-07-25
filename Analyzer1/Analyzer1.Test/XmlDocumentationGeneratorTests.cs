@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
@@ -22,6 +23,7 @@ namespace Analyzer1.Test
 
             actual.Should().Be(expected);
         }
+
 
         [Fact]
         public void ForVoidMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
@@ -96,11 +98,16 @@ namespace Analyzer1.Test
         {
             TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
 
-            var methodDeclaration = SyntaxFactory.MethodDeclaration(ts, "MyTestMethod");
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(ts, "MyTestMethod")
+                .WithParameterList(SyntaxFactory.ParameterList(
+                    SyntaxFactory.SeparatedList(new[] { SyntaxFactory.Parameter(SyntaxFactory.Identifier("testName")) })));
 
             string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
+/// <param name=""testName"">testName</param>
+/// <param name=""testAge"">testAge</param>
+/// <param name=""testCustomClass"">testCustomClass</param>
 ";
 
             var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();

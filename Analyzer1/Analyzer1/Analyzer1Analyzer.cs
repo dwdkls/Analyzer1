@@ -39,7 +39,7 @@ namespace Analyzer1
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
             //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
 
@@ -62,7 +62,6 @@ namespace Analyzer1
                     Category, DiagnosticSeverity.Error, true, Description);
 
                 var diagnostic = Diagnostic.Create(descriptor, symbol.Locations.FirstOrDefault(), symbol.Name);
-
                 context.ReportDiagnostic(diagnostic);
             }
         }
