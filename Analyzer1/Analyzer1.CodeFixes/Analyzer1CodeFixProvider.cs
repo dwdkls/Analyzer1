@@ -24,7 +24,7 @@ namespace Analyzer1
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(Analyzer1Analyzer.DiagnosticId); }
+            get { return ImmutableArray.Create(Analyzer1Analyzer.ClassDiagnosticId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()
@@ -44,9 +44,9 @@ namespace Analyzer1
             var diagnosticSpan = diagnostic.Location.SourceSpan;
 
             // Find the type declaration identified by the diagnostic.
-            //var classDeclaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
-            var token = root.FindToken(diagnosticSpan.Start).Parent;
-            var methodDeclaration = token as MethodDeclarationSyntax;
+            var classDeclaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
+            //var token = root.FindToken(diagnosticSpan.Start).Parent;
+            //var methodDeclaration = token as MethodDeclarationSyntax;
 
             //var act = CodeAction.Create()
 
@@ -54,7 +54,8 @@ namespace Analyzer1
             context.RegisterCodeFix(
                 CodeAction.Create(
                     CodeFixTitle,
-                    c => AddMissingDocumentation(context.Document, methodDeclaration, c),
+                    c => AddMissingDocumentation(context.Document, classDeclaration, c),
+                    //c => AddMissingDocumentation(context.Document, methodDeclaration, c),
                     nameof(CodeFixTitle)),
                 diagnostic);
 
@@ -72,8 +73,8 @@ namespace Analyzer1
         }
 
         private async Task<Document> AddMissingDocumentation(Document document, 
-            //TypeDeclarationSyntax declaration, 
-            MethodDeclarationSyntax declaration, 
+            TypeDeclarationSyntax declaration, 
+            //MethodDeclarationSyntax declaration, 
             CancellationToken cancellationToken)
         {
             //Debugger.Launch();
@@ -86,8 +87,8 @@ namespace Analyzer1
             //var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
             //var typeSymbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
 
-            //var testDocumentation = XmlDocumentationGenerator.ForClass(declaration);
-            var testDocumentation = XmlDocumentationGenerator.ForMethod(declaration);
+            var testDocumentation = XmlDocumentationGenerator.ForClass(declaration);
+            //var testDocumentation = XmlDocumentationGenerator.ForMethod(declaration);
             var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
             var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
 

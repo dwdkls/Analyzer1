@@ -14,22 +14,50 @@ namespace Analyzer1
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class Analyzer1Analyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "Analyzer1";
+        public const string ClassDiagnosticId = "MissingClassDocumentation";
+
+        //public const string DiagnosticId = "Analyzer1";
 
         // You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
         // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Localizing%20Analyzers.md for more on localization
-        private static readonly string Title = "missing class documentation";
-        //new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
-        private static readonly string MessageFormat = "Class '{0}' doesn't have a documentation";
-        //= new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
-        private static readonly string Description = "Public class must have a documentation";
-            //new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
+        //private static readonly string Title = "missing class documentation";
+        ////new LocalizableResourceString(nameof(Resources.AnalyzerTitle), Resources.ResourceManager, typeof(Resources));
+        //private static readonly string MessageFormat = "Class '{0}' doesn't have a documentation";
+        ////= new LocalizableResourceString(nameof(Resources.AnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
+        //private static readonly string Description = "Public class must have a documentation";
+        //new LocalizableResourceString(nameof(Resources.AnalyzerDescription), Resources.ResourceManager, typeof(Resources));
         private const string Category = "Naming";
 
-        private static readonly DiagnosticDescriptor Rule
-            = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
+        //private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        //    DiagnosticId,
+        //    Title,
+        //    MessageFormat,
+        //    Category,
+        //    DiagnosticSeverity.Error,
+        //    true,
+        //    Description);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
+
+        private const string ClassTitle = "Missing class documentation";
+        private const string ClassMessageFormat = "Class '{0}' doesn't have a documentation";
+        private const string ClassDescription = "Public class must have a documentation";
+
+        //private const string MethodTitle = "Missing method documentation";
+        //private const string MethodMessageFormat = "Method '{0}' doesn't have a documentation";
+        //private const string MethodDescription = "Public method must have a documentation";
+
+        private static readonly DiagnosticDescriptor ClassRule = new DiagnosticDescriptor(
+          ClassDiagnosticId,
+          ClassTitle,
+          ClassMessageFormat,
+          Category,
+          DiagnosticSeverity.Error,
+          true,
+          ClassDescription);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(ClassRule); } }
+
+        //public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -39,8 +67,8 @@ namespace Analyzer1
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
-            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
             //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
 
             //context.RegisterSymbolAction(AnalyzeNamespace, SymbolKind.Namespace);
@@ -50,18 +78,9 @@ namespace Analyzer1
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            var symbol = context.Symbol;
-
-            var currentDoc = symbol.GetDocumentationCommentXml();
-
-            if (string.IsNullOrEmpty(currentDoc))
+            if (string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
             {
-                var descriptor = new DiagnosticDescriptor(DiagnosticId,
-                    Title,
-                    MessageFormat,
-                    Category, DiagnosticSeverity.Error, true, Description);
-
-                var diagnostic = Diagnostic.Create(descriptor, symbol.Locations.FirstOrDefault(), symbol.Name);
+                var diagnostic = Diagnostic.Create(ClassRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
                 context.ReportDiagnostic(diagnostic);
             }
         }
