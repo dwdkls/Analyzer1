@@ -15,6 +15,7 @@ namespace Analyzer1
     public class Analyzer1Analyzer : DiagnosticAnalyzer
     {
         public const string ClassDiagnosticId = "MissingClassDocumentation";
+        public const string MethodDiagnosticId = "MissingMethodDocumentation";
 
         //public const string DiagnosticId = "Analyzer1";
 
@@ -42,22 +43,19 @@ namespace Analyzer1
         private const string ClassMessageFormat = "Class '{0}' doesn't have a documentation";
         private const string ClassDescription = "Public class must have a documentation";
 
-        //private const string MethodTitle = "Missing method documentation";
-        //private const string MethodMessageFormat = "Method '{0}' doesn't have a documentation";
-        //private const string MethodDescription = "Public method must have a documentation";
+        private const string MethodTitle = "Missing method documentation";
+        private const string MethodMessageFormat = "Method '{0}' doesn't have a documentation";
+        private const string MethodDescription = "Public method must have a documentation";
 
         private static readonly DiagnosticDescriptor ClassRule = new DiagnosticDescriptor(
-          ClassDiagnosticId,
-          ClassTitle,
-          ClassMessageFormat,
-          Category,
-          DiagnosticSeverity.Error,
-          true,
-          ClassDescription);
+            ClassDiagnosticId, ClassTitle, ClassMessageFormat,
+            Category, DiagnosticSeverity.Error, true, ClassDescription);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(ClassRule); } }
+        private static readonly DiagnosticDescriptor MethodRule = new DiagnosticDescriptor(
+            MethodDiagnosticId, MethodTitle, MethodMessageFormat,
+            Category, DiagnosticSeverity.Error, true, MethodDescription);
 
-        //public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ClassRule, MethodRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -67,7 +65,7 @@ namespace Analyzer1
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            context.RegisterSymbolAction(AnalyzeClass, SymbolKind.NamedType);
             //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
             //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
 
@@ -76,12 +74,26 @@ namespace Analyzer1
             //context.RegisterSyntaxTreeAction(AnalyzeTree);
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeClass(SymbolAnalysisContext context)
         {
             if (string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
             {
                 var diagnostic = Diagnostic.Create(ClassRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
                 context.ReportDiagnostic(diagnostic);
+            }
+
+            //Debugger.Launch();
+
+            var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+
+            var methods = namedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Method && !m.IsImplicitlyDeclared);
+            foreach (var method in methods)
+            {
+                if (string.IsNullOrEmpty(method.ContainingSymbol.GetDocumentationCommentXml()))
+                {
+                    var diagnostic = Diagnostic.Create(MethodRule, method.Locations.FirstOrDefault(), method.Name);
+                    context.ReportDiagnostic(diagnostic);
+                }
             }
         }
 
