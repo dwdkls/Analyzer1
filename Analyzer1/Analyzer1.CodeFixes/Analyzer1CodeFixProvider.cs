@@ -24,7 +24,7 @@ namespace Analyzer1
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(Analyzer1Analyzer.ClassDiagnosticId); }
+            get { return ImmutableArray.Create(Analyzer1Analyzer.MethodDiagnosticId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()
@@ -44,20 +44,45 @@ namespace Analyzer1
             var diagnosticSpan = diagnostic.Location.SourceSpan;
 
             // Find the type declaration identified by the diagnostic.
-            var classDeclaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
-            //var token = root.FindToken(diagnosticSpan.Start).Parent;
-            //var methodDeclaration = token as MethodDeclarationSyntax;
+            //var classDeclaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
+
+
+            var token = root.FindToken(diagnosticSpan.Start).Parent;
+
+            var methodDeclaration = token as MethodDeclarationSyntax;
+            var classDeclaration = token as TypeDeclarationSyntax;
 
             //var act = CodeAction.Create()
 
             // Register a code action that will invoke the fix.
-            context.RegisterCodeFix(
+
+            if (classDeclaration != null)
+            {
+                context.RegisterCodeFix(
                 CodeAction.Create(
                     CodeFixTitle,
                     c => AddMissingDocumentation(context.Document, classDeclaration, c),
-                    //c => AddMissingDocumentation(context.Document, methodDeclaration, c),
                     nameof(CodeFixTitle)),
                 diagnostic);
+            }
+
+            if (methodDeclaration != null)
+            {
+                context.RegisterCodeFix(
+                CodeAction.Create(
+                    CodeFixTitle,
+                    c => AddMissingDocumentation(context.Document, methodDeclaration, c),
+                    nameof(CodeFixTitle)),
+                diagnostic);
+            }
+
+            //context.RegisterCodeFix(
+            //    CodeAction.Create(
+            //        CodeFixTitle,
+            //        c => AddMissingDocumentation(context.Document, classDeclaration, c),
+            //        //c => AddMissingDocumentation(context.Document, methodDeclaration, c),
+            //        nameof(CodeFixTitle)),
+            //    diagnostic);
 
             /* foreach (var diagnostic in context.Diagnostics)
             {
@@ -72,26 +97,55 @@ namespace Analyzer1
             return SpecializedTasks.CompletedTask;*/
         }
 
-        private async Task<Document> AddMissingDocumentation(Document document, 
-            TypeDeclarationSyntax declaration, 
-            //MethodDeclarationSyntax declaration, 
+        //private async Task<Document> AddMissingDocumentation(Document document,
+        //   MemberDeclarationSyntax declaration,
+        //   CancellationToken cancellationToken)
+        //{
+        //    //Debugger.Launch();
+
+        //    var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+
+        //    // Generate the documentation text
+
+        //    // Get the symbol representing the type to be renamed.
+        //    //var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+        //    //var typeSymbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
+
+        //    var testDocumentation = XmlDocumentationGenerator.ForClass(declaration);
+        //    //var testDocumentation = XmlDocumentationGenerator.ForMethod(declaration);
+        //    var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
+        //    var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
+
+        //    var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
+        //    return document.WithSyntaxRoot(syntaxNode);
+        //}
+
+
+
+        private async Task<Document> AddMissingDocumentation(Document document,
+            TypeDeclarationSyntax declaration,
             CancellationToken cancellationToken)
         {
-            //Debugger.Launch();
-
             var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            // Generate the documentation text
-
-            // Get the symbol representing the type to be renamed.
-            //var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-            //var typeSymbol = semanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-
             var testDocumentation = XmlDocumentationGenerator.ForClass(declaration);
-            //var testDocumentation = XmlDocumentationGenerator.ForMethod(declaration);
+
             var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
             var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
+            var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
+            return document.WithSyntaxRoot(syntaxNode);
+        }
 
+        private async Task<Document> AddMissingDocumentation(Document document,
+            MethodDeclarationSyntax declaration,
+            CancellationToken cancellationToken)
+        {
+            var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+
+            var testDocumentation = XmlDocumentationGenerator.ForMethod(declaration);
+
+            var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
+            var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
             var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
             return document.WithSyntaxRoot(syntaxNode);
         }

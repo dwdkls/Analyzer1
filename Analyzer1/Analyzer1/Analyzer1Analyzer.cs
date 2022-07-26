@@ -14,7 +14,7 @@ namespace Analyzer1
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class Analyzer1Analyzer : DiagnosticAnalyzer
     {
-        public const string ClassDiagnosticId = "MissingClassDocumentation";
+        //public const string ClassDiagnosticId = "MissingClassDocumentation";
         public const string MethodDiagnosticId = "MissingMethodDocumentation";
 
         //public const string DiagnosticId = "Analyzer1";
@@ -39,23 +39,23 @@ namespace Analyzer1
         //    Description);
 
 
-        private const string ClassTitle = "Missing class documentation";
-        private const string ClassMessageFormat = "Class '{0}' doesn't have a documentation";
-        private const string ClassDescription = "Public class must have a documentation";
+        //private const string ClassTitle = "Missing class documentation";
+        //private const string ClassMessageFormat = "Class '{0}' doesn't have a documentation";
+        //private const string ClassDescription = "Public class must have a documentation";
 
         private const string MethodTitle = "Missing method documentation";
         private const string MethodMessageFormat = "Method '{0}' doesn't have a documentation";
         private const string MethodDescription = "Public method must have a documentation";
 
-        private static readonly DiagnosticDescriptor ClassRule = new DiagnosticDescriptor(
-            ClassDiagnosticId, ClassTitle, ClassMessageFormat,
-            Category, DiagnosticSeverity.Error, true, ClassDescription);
+        //private static readonly DiagnosticDescriptor ClassRule = new DiagnosticDescriptor(
+        //    ClassDiagnosticId, ClassTitle, ClassMessageFormat,
+        //    Category, DiagnosticSeverity.Error, true, ClassDescription);
 
         private static readonly DiagnosticDescriptor MethodRule = new DiagnosticDescriptor(
             MethodDiagnosticId, MethodTitle, MethodMessageFormat,
             Category, DiagnosticSeverity.Error, true, MethodDescription);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ClassRule, MethodRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(MethodRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -65,56 +65,61 @@ namespace Analyzer1
             // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
-            context.RegisterSymbolAction(AnalyzeClass, SymbolKind.NamedType);
-            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
-            //context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+
+            //context.RegisterSymbolAction(AnalyzeClass, SymbolKind.NamedType);
+            //context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
+
 
             //context.RegisterSymbolAction(AnalyzeNamespace, SymbolKind.Namespace);
 
             //context.RegisterSyntaxTreeAction(AnalyzeTree);
         }
 
-        private static void AnalyzeClass(SymbolAnalysisContext context)
-        {
-            if (string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
-            {
-                var diagnostic = Diagnostic.Create(ClassRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
-                context.ReportDiagnostic(diagnostic);
-            }
+        //private static void AnalyzeClass(SymbolAnalysisContext context)
+        //{
+        //    if (string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
+        //    {
+        //        var diagnostic = Diagnostic.Create(ClassRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+        //        context.ReportDiagnostic(diagnostic);
+        //    }
 
-            //Debugger.Launch();
+        //    //Debugger.Launch();
 
-            var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+        //    //var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
-            var methods = namedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Method && !m.IsImplicitlyDeclared);
-            foreach (var method in methods)
-            {
-                if (string.IsNullOrEmpty(method.ContainingSymbol.GetDocumentationCommentXml()))
-                {
-                    var diagnostic = Diagnostic.Create(MethodRule, method.Locations.FirstOrDefault(), method.Name);
-                    context.ReportDiagnostic(diagnostic);
-                }
-            }
-        }
+        //    //var methods = namedTypeSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Method && !m.IsImplicitlyDeclared);
+        //    //foreach (var method in methods)
+        //    //{
+        //    //    if (string.IsNullOrEmpty(method.ContainingSymbol.GetDocumentationCommentXml()))
+        //    //    {
+        //    //        var diagnostic = Diagnostic.Create(MethodRule, method.Locations.FirstOrDefault(), method.Name);
+        //    //        context.ReportDiagnostic(diagnostic);
+        //    //    }
+        //    //}
+        //}
 
         //private static void AnalyzeMethod(SymbolAnalysisContext context)
         //{
-        //    var namedTypeSymbol = (IMethodSymbol)context.Symbol;
-
-        //    var currentDoc = namedTypeSymbol.GetDocumentationCommentXml();
-
-        //    if (string.IsNullOrEmpty(currentDoc))
+        //    if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
         //    {
-        //        var descriptor = new DiagnosticDescriptor(DiagnosticId,
-        //            "missing class documentation",
-        //            "Class '{0}' doesn't have a documentation",
-        //            Category, DiagnosticSeverity.Error, true, "Public class must have a documentation");
-
-        //        var diagnostic = Diagnostic.Create(descriptor, namedTypeSymbol.Locations.FirstOrDefault(), namedTypeSymbol.Name);
-
+        //        var diagnostic = Diagnostic.Create(MethodRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
         //        context.ReportDiagnostic(diagnostic);
         //    }
         //}
+
+
+
+        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        {
+            if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
+            {
+                var diagnostic = Diagnostic.Create(MethodRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+                context.ReportDiagnostic(diagnostic);
+            }
+        }
+
 
         //private void AnalyzeTree(SyntaxTreeAnalysisContext context)
         //{
