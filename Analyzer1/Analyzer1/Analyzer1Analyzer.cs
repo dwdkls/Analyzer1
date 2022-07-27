@@ -43,19 +43,19 @@ namespace Analyzer1
         //private const string ClassMessageFormat = "Class '{0}' doesn't have a documentation";
         //private const string ClassDescription = "Public class must have a documentation";
 
-        private const string MethodTitle = "Missing method documentation";
-        private const string MethodMessageFormat = "Method '{0}' doesn't have a documentation";
-        private const string MethodDescription = "Public method must have a documentation";
+        private const string Title = "Missing member documentation";
+        private const string MessageFormat = "Member '{0}' doesn't have a documentation";
+        private const string Description = "Public member must have a documentation";
 
         //private static readonly DiagnosticDescriptor ClassRule = new DiagnosticDescriptor(
         //    ClassDiagnosticId, ClassTitle, ClassMessageFormat,
         //    Category, DiagnosticSeverity.Error, true, ClassDescription);
 
-        private static readonly DiagnosticDescriptor MethodRule = new DiagnosticDescriptor(
-            MethodDiagnosticId, MethodTitle, MethodMessageFormat,
-            Category, DiagnosticSeverity.Error, true, MethodDescription);
+        private static readonly DiagnosticDescriptor MemberRule = new DiagnosticDescriptor(
+            MethodDiagnosticId, Title, MessageFormat,
+            Category, DiagnosticSeverity.Error, true, Description);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(MethodRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(MemberRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -66,7 +66,8 @@ namespace Analyzer1
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
 
             //context.RegisterSymbolAction(AnalyzeClass, SymbolKind.NamedType);
             //context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
@@ -76,6 +77,44 @@ namespace Analyzer1
 
             //context.RegisterSyntaxTreeAction(AnalyzeTree);
         }
+
+        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        {
+            if (context.Symbol.DeclaredAccessibility == Accessibility.Public 
+                && string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
+            {
+                var diagnostic = Diagnostic.Create(MemberRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+                context.ReportDiagnostic(diagnostic);
+            }
+        }
+
+        private static void AnalyzeMethod(SymbolAnalysisContext context)
+        {
+            var method = (IMethodSymbol)context.Symbol;
+
+            if (method.MethodKind == MethodKind.Ordinary)
+            {
+                AnalyzeSymbol(context);
+
+                //if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
+                //{
+                //    var diagnostic = Diagnostic.Create(MemberRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+                //    context.ReportDiagnostic(diagnostic);
+                //}
+            }
+        }
+
+        //private static void AnalyzeProperty(SymbolAnalysisContext context)
+        //{
+        //    if (context.Symbol.DeclaredAccessibility == Accessibility.Public)
+        //    {
+        //        if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
+        //        {
+        //            var diagnostic = Diagnostic.Create(MemberRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+        //            context.ReportDiagnostic(diagnostic);
+        //        }
+        //    }
+        //}
 
         //private static void AnalyzeClass(SymbolAnalysisContext context)
         //{
@@ -100,25 +139,21 @@ namespace Analyzer1
         //    //}
         //}
 
-        //private static void AnalyzeMethod(SymbolAnalysisContext context)
+
+
+
+
+        //private static void AnalyzeSymbol(SymbolAnalysisContext context)
         //{
+        //    var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+
+
         //    if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
         //    {
         //        var diagnostic = Diagnostic.Create(MethodRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
         //        context.ReportDiagnostic(diagnostic);
         //    }
         //}
-
-
-
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
-        {
-            if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
-            {
-                var diagnostic = Diagnostic.Create(MethodRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
-                context.ReportDiagnostic(diagnostic);
-            }
-        }
 
 
         //private void AnalyzeTree(SyntaxTreeAnalysisContext context)
