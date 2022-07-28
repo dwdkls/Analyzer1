@@ -1,13 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Diagnostics;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
+﻿using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Analyzer1
 {
@@ -15,7 +9,7 @@ namespace Analyzer1
     public class Analyzer1Analyzer : DiagnosticAnalyzer
     {
         //public const string ClassDiagnosticId = "MissingClassDocumentation";
-        public const string MethodDiagnosticId = "MissingMethodDocumentation";
+        public const string MethodDiagnosticId = "DK001";
 
         //public const string DiagnosticId = "Analyzer1";
 
@@ -67,7 +61,7 @@ namespace Analyzer1
 
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
             context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+            context.RegisterSymbolAction(AnalyzeProperty, SymbolKind.Property);
 
             //context.RegisterSymbolAction(AnalyzeClass, SymbolKind.NamedType);
             //context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
@@ -104,17 +98,17 @@ namespace Analyzer1
             }
         }
 
-        //private static void AnalyzeProperty(SymbolAnalysisContext context)
-        //{
-        //    if (context.Symbol.DeclaredAccessibility == Accessibility.Public)
-        //    {
-        //        if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
-        //        {
-        //            var diagnostic = Diagnostic.Create(MemberRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
-        //            context.ReportDiagnostic(diagnostic);
-        //        }
-        //    }
-        //}
+        private static void AnalyzeProperty(SymbolAnalysisContext context)
+        {
+            if (context.Symbol.DeclaredAccessibility == Accessibility.Public)
+            {
+                if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
+                {
+                    var diagnostic = Diagnostic.Create(MemberRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+                    context.ReportDiagnostic(diagnostic);
+                }
+            }
+        }
 
         //private static void AnalyzeClass(SymbolAnalysisContext context)
         //{

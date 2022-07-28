@@ -70,5 +70,17 @@ namespace Analyzer1
                     .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
             }
         }
+
+        public static DocumentationCommentTriviaSyntax ForProperty(PropertyDeclarationSyntax declaration)
+        {
+            var summary = SyntaxFactory.XmlSummaryElement(
+               SyntaxFactory.XmlNewLine(Environment.NewLine),
+               SyntaxFactory.XmlText(declaration.Identifier.Text),
+               SyntaxFactory.XmlNewLine(Environment.NewLine)
+           );
+
+            return SyntaxFactory.DocumentationComment(summary)
+                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        }
     }
 }

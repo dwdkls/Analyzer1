@@ -1,18 +1,14 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using System.Collections.Immutable;
+using System.Composition;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.Rename;
-using Microsoft.CodeAnalysis.Text;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Composition;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Analyzer1
 {
@@ -49,32 +45,62 @@ namespace Analyzer1
 
             var token = root.FindToken(diagnosticSpan.Start).Parent;
 
-            var methodDeclaration = token as MethodDeclarationSyntax;
-            var classDeclaration = token as TypeDeclarationSyntax;
-
-            //var act = CodeAction.Create()
-
-            // Register a code action that will invoke the fix.
-
-            if (classDeclaration != null)
+            var codeAction = token switch
             {
-                context.RegisterCodeFix(
-                CodeAction.Create(
-                    CodeFixTitle,
-                    c => AddMissingDocumentation(context.Document, classDeclaration, c),
-                    nameof(CodeFixTitle)),
-                diagnostic);
-            }
+                TypeDeclarationSyntax cd => CodeAction.Create(CodeFixTitle, c => AddMissingDocumentation(context.Document, cd, c), nameof(CodeFixTitle)),
+                MethodDeclarationSyntax md => CodeAction.Create(CodeFixTitle, c => AddMissingDocumentation(context.Document, md, c), nameof(CodeFixTitle)),
+                PropertyDeclarationSyntax pd => CodeAction.Create(CodeFixTitle, c => AddMissingDocumentation(context.Document, pd, c), nameof(CodeFixTitle)),
+                _ => throw new NotImplementedException(),
+            };
 
-            if (methodDeclaration != null)
-            {
-                context.RegisterCodeFix(
-                CodeAction.Create(
-                    CodeFixTitle,
-                    c => AddMissingDocumentation(context.Document, methodDeclaration, c),
-                    nameof(CodeFixTitle)),
-                diagnostic);
-            }
+            context.RegisterCodeFix(codeAction, diagnostic);
+
+            #region
+            //switch (token)
+            //{
+            //    case TypeDeclarationSyntax classDeclaration:
+            //        {
+            //            context.RegisterCodeFix(
+            //            CodeAction.Create(
+            //                CodeFixTitle,
+            //                c => AddMissingDocumentation(context.Document, classDeclaration, c),
+            //                nameof(CodeFixTitle)),
+            //            diagnostic);
+            //            break;
+            //        }
+
+            //    case MethodDeclarationSyntax methodDeclaration:
+            //        {
+            //            context.RegisterCodeFix(
+            //            CodeAction.Create(
+            //                CodeFixTitle,
+            //                c => AddMissingDocumentation(context.Document, methodDeclaration, c),
+            //                nameof(CodeFixTitle)),
+            //            diagnostic);
+            //            break;
+            //        }
+            //}
+
+
+
+            //var propertyDeclaration = token as PropertyDeclarationSyntax;
+            //if (methodDeclaration != null)
+            //{
+            //    context.RegisterCodeFix(
+            //    CodeAction.Create(
+            //        CodeFixTitle,
+            //        c => AddMissingDocumentation(context.Document, methodDeclaration, c),
+            //        nameof(CodeFixTitle)),
+            //    diagnostic);
+            //}
+
+            //CodeAction codeAction = CodeAction.Create(
+            //        CodeFixTitle,
+            //        c => AddMissingDocumentation(context.Document, methodDeclaration, c),
+            //        nameof(CodeFixTitle));
+
+
+
 
             //context.RegisterCodeFix(
             //    CodeAction.Create(
@@ -95,6 +121,7 @@ namespace Analyzer1
             }
 
             return SpecializedTasks.CompletedTask;*/
+            #endregion
         }
 
         //private async Task<Document> AddMissingDocumentation(Document document,
@@ -143,6 +170,20 @@ namespace Analyzer1
             var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             var testDocumentation = XmlDocumentationGenerator.ForMethod(declaration);
+
+            var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
+            var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
+            var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
+            return document.WithSyntaxRoot(syntaxNode);
+        }
+
+        private async Task<Document> AddMissingDocumentation(Document document,
+           PropertyDeclarationSyntax declaration,
+           CancellationToken cancellationToken)
+        {
+            var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+
+            var testDocumentation = XmlDocumentationGenerator.ForProperty(declaration);
 
             var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
             var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
