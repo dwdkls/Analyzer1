@@ -5,6 +5,13 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Analyzer1
 {
+    // TODO: limit to controllers (ControllerBase & [ApiController])
+    // TODO: add classes & records which are used by controllers
+    // TODO: split member names into sentences
+    // TODO: return types 
+    // TODO: try to create tests
+    // TODO: publish as a package
+
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class Analyzer1Analyzer : DiagnosticAnalyzer
     {
@@ -25,17 +32,32 @@ namespace Analyzer1
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
 
-            // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
-
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
-            context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
+            context.RegisterSymbolAction(AnalyzeClass, SymbolKind.NamedType);
             context.RegisterSymbolAction(AnalyzeProperty, SymbolKind.Property);
+            context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeClass(SymbolAnalysisContext context)
         {
-            if (context.Symbol.DeclaredAccessibility == Accessibility.Public 
+            var type = (INamedTypeSymbol)context.Symbol;
+
+            var isController = type.BaseType.Name == "ControllerBase" 
+                || type.GetAttributes().Any(q => q.GetType().Name == "ApiControllerAttribute");
+
+            if (isController)
+            {
+                if (context.Symbol.DeclaredAccessibility == Accessibility.Public
+                    && string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
+                {
+                    var diagnostic = Diagnostic.Create(DiagnosticRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+                    context.ReportDiagnostic(diagnostic);
+                }
+            }
+        }
+
+        private static void AnalyzeProperty(SymbolAnalysisContext context)
+        {
+            if (context.Symbol.DeclaredAccessibility == Accessibility.Public
                 && string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
             {
                 var diagnostic = Diagnostic.Create(DiagnosticRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
@@ -45,7 +67,7 @@ namespace Analyzer1
 
         private static void AnalyzeMethod(SymbolAnalysisContext context)
         {
-            var method = (IMethodSymbol)context.Symbol;
+            var method = context.Symbol as IMethodSymbol;
 
             if (method.MethodKind == MethodKind.Ordinary)
             {
@@ -53,16 +75,15 @@ namespace Analyzer1
             }
         }
 
-        private static void AnalyzeProperty(SymbolAnalysisContext context)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            if (context.Symbol.DeclaredAccessibility == Accessibility.Public)
+            if (context.Symbol.DeclaredAccessibility == Accessibility.Public
+                && string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
             {
-                if (string.IsNullOrEmpty(context.Symbol.GetDocumentationCommentXml()))
-                {
-                    var diagnostic = Diagnostic.Create(DiagnosticRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
-                    context.ReportDiagnostic(diagnostic);
-                }
+                var diagnostic = Diagnostic.Create(DiagnosticRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
+                context.ReportDiagnostic(diagnostic);
             }
         }
+
     }
 }

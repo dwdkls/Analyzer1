@@ -38,24 +38,33 @@ namespace Analyzer1
 
             var token = root.FindToken(diagnosticSpan.Start).Parent;
 
+            CodeAction CreateCodeAction(Func<CancellationToken, Task<Document>> documentGenerator)
+            {
+                return CodeAction.Create(CodeFixTitle,
+                    documentGenerator,
+                    nameof(CodeFixTitle));
+            }
+
             var codeAction = token switch
             {
-                TypeDeclarationSyntax cd => CodeAction.Create(CodeFixTitle, c => AddMissingDocumentation(context.Document, cd, c), nameof(CodeFixTitle)),
-                MethodDeclarationSyntax md => CodeAction.Create(CodeFixTitle, c => AddMissingDocumentation(context.Document, md, c), nameof(CodeFixTitle)),
-                PropertyDeclarationSyntax pd => CodeAction.Create(CodeFixTitle, c => AddMissingDocumentation(context.Document, pd, c), nameof(CodeFixTitle)),
+                TypeDeclarationSyntax cd => CreateCodeAction(c => AddMissingDocumentation(context.Document, cd, _ => XmlDocumentationGenerator.ForType(cd), c)),
+                MethodDeclarationSyntax md => CreateCodeAction(c => AddMissingDocumentation(context.Document, md, _ => XmlDocumentationGenerator.ForMethod(md), c)),
+                PropertyDeclarationSyntax pd => CreateCodeAction(c => AddMissingDocumentation(context.Document, pd, _ => XmlDocumentationGenerator.ForProperty(pd), c)),
                 _ => throw new NotImplementedException(),
             };
 
             context.RegisterCodeFix(codeAction, diagnostic);
         }
 
+
         private async Task<Document> AddMissingDocumentation(Document document,
-            TypeDeclarationSyntax declaration,
+            MemberDeclarationSyntax declaration,
+            Func<MemberDeclarationSyntax, DocumentationCommentTriviaSyntax> documentationGenerator,
             CancellationToken cancellationToken)
         {
             var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            var testDocumentation = XmlDocumentationGenerator.ForClass(declaration);
+            var testDocumentation = documentationGenerator(declaration);
 
             var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
             var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
@@ -63,32 +72,46 @@ namespace Analyzer1
             return document.WithSyntaxRoot(syntaxNode);
         }
 
-        private async Task<Document> AddMissingDocumentation(Document document,
-            MethodDeclarationSyntax declaration,
-            CancellationToken cancellationToken)
-        {
-            var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        //private async Task<Document> AddMissingDocumentation(Document document,
+        //    TypeDeclarationSyntax declaration,
+        //    CancellationToken cancellationToken)
+        //{
+        //    var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            var testDocumentation = XmlDocumentationGenerator.ForMethod(declaration);
+        //    var testDocumentation = XmlDocumentationGenerator.ForMember(declaration);
 
-            var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
-            var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
-            var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
-            return document.WithSyntaxRoot(syntaxNode);
-        }
+        //    var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
+        //    var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
+        //    var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
+        //    return document.WithSyntaxRoot(syntaxNode);
+        //}
 
-        private async Task<Document> AddMissingDocumentation(Document document,
-           PropertyDeclarationSyntax declaration,
-           CancellationToken cancellationToken)
-        {
-            var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        //private async Task<Document> AddMissingDocumentation(Document document,
+        //    MethodDeclarationSyntax declaration,
+        //    CancellationToken cancellationToken)
+        //{
+        //    var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            var testDocumentation = XmlDocumentationGenerator.ForProperty(declaration);
+        //    var testDocumentation = XmlDocumentationGenerator.ForMember(declaration);
 
-            var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
-            var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
-            var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
-            return document.WithSyntaxRoot(syntaxNode);
-        }
+        //    var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
+        //    var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
+        //    var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
+        //    return document.WithSyntaxRoot(syntaxNode);
+        //}
+
+        //private async Task<Document> AddMissingDocumentation(Document document,
+        //   PropertyDeclarationSyntax declaration,
+        //   CancellationToken cancellationToken)
+        //{
+        //    var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+
+        //    var testDocumentation = XmlDocumentationGenerator.ForMember(declaration);
+
+        //    var documentationTrivia = SyntaxFactory.Trivia(testDocumentation);
+        //    var newDeclaration = declaration.WithLeadingTrivia(documentationTrivia);
+        //    var syntaxNode = syntaxRoot.ReplaceNode(declaration, newDeclaration);
+        //    return document.WithSyntaxRoot(syntaxNode);
+        //}
     }
 }
