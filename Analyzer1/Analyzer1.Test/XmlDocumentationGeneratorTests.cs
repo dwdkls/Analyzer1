@@ -19,7 +19,7 @@ namespace Analyzer1.Test
 /// </summary>
 ";
 
-            var actual = XmlDocumentationGenerator.ForClass(typeDeclaration).ToFullString();
+            var actual = XmlDocumentationGenerator.ForType(typeDeclaration).ToFullString();
 
             actual.Should().Be(expected);
         }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,7 +7,7 @@ namespace Analyzer1
 {
     public static class XmlDocumentationGenerator
     {
-        public static DocumentationCommentTriviaSyntax ForClass(TypeDeclarationSyntax declaration)
+        public static DocumentationCommentTriviaSyntax ForType(TypeDeclarationSyntax declaration)
         {
             var summary = SyntaxFactory.XmlSummaryElement(
                 SyntaxFactory.XmlNewLine(Environment.NewLine),
@@ -21,6 +19,7 @@ namespace Analyzer1
                 .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
         }
 
+        #region SO code
         /* var testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
                 SyntaxKind.SingleLineDocumentationCommentTrivia, SyntaxFactory.List(new XmlNodeSyntax[] { SyntaxFactory.XmlText()
                 .WithTextTokens(SyntaxFactory.TokenList(
@@ -38,6 +37,7 @@ namespace Analyzer1
 
             return testDocumentation;
         */
+        #endregion
 
         public static DocumentationCommentTriviaSyntax ForMethod(MethodDeclarationSyntax declaration)
         {
