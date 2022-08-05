@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -6,6 +7,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Analyzer1
 {
     // TODO: limit to controllers (ControllerBase & [ApiController])
+    // TODO: add support for generic return types
+    // TODO: add support for generic parameters
     // TODO: add classes & records which are used by controllers
     // TODO: split member names into sentences
     // TODO: return types 
@@ -39,43 +42,43 @@ namespace Analyzer1
 
         private static void AnalyzeClass(SymbolAnalysisContext context)
         {
-            var type = (INamedTypeSymbol)context.Symbol;
+            //Debugger.Launch();
 
-            var isController = type.BaseType.Name == "ControllerBase" 
-                || type.GetAttributes().Any(q => q.GetType().Name == "ApiControllerAttribute");
-
-            if (isController)
+            if (IsControllerType((INamedTypeSymbol)context.Symbol))
             {
-                if (context.Symbol.DeclaredAccessibility == Accessibility.Public
-                    && string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
-                {
-                    var diagnostic = Diagnostic.Create(DiagnosticRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
-                    context.ReportDiagnostic(diagnostic);
-                }
+                ReportMissingDocumentationForPublicSymbol(context);
             }
         }
 
         private static void AnalyzeProperty(SymbolAnalysisContext context)
         {
-            if (context.Symbol.DeclaredAccessibility == Accessibility.Public
-                && string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
+            //Debugger.Launch();
+
+            if (IsControllerType(context.Symbol.ContainingType))
             {
-                var diagnostic = Diagnostic.Create(DiagnosticRule, context.Symbol.Locations.FirstOrDefault(), context.Symbol.Name);
-                context.ReportDiagnostic(diagnostic);
+                ReportMissingDocumentationForPublicSymbol(context);
             }
         }
 
         private static void AnalyzeMethod(SymbolAnalysisContext context)
         {
-            var method = context.Symbol as IMethodSymbol;
+            //Debugger.Launch();
 
-            if (method.MethodKind == MethodKind.Ordinary)
+            if (IsControllerType(context.Symbol.ContainingType)
+                && context.Symbol is IMethodSymbol method
+                && method.MethodKind == MethodKind.Ordinary)
             {
-                AnalyzeSymbol(context);
+                ReportMissingDocumentationForPublicSymbol(context);
             }
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static bool IsControllerType(INamedTypeSymbol typeSymbol)
+        {
+            return typeSymbol.BaseType.Name == "ControllerBase"
+               || typeSymbol.GetAttributes().Any(q => q.GetType().Name == "ApiControllerAttribute");
+        }
+
+        private static void ReportMissingDocumentationForPublicSymbol(SymbolAnalysisContext context)
         {
             if (context.Symbol.DeclaredAccessibility == Accessibility.Public
                 && string.IsNullOrWhiteSpace(context.Symbol.GetDocumentationCommentXml()))
@@ -84,6 +87,5 @@ namespace Analyzer1
                 context.ReportDiagnostic(diagnostic);
             }
         }
-
     }
 }

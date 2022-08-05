@@ -60,6 +60,28 @@ namespace Analyzer1.Test
         }
 
         [Fact]
+        public void ForListOfIntMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        {
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
+
+            SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("int"));
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A List of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
         public void ForStringMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
         {
             var returnType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("string"));
@@ -94,7 +116,7 @@ namespace Analyzer1.Test
         }
 
         [Fact]
-        public void ForVoidMethodWithParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        public void ForVoidMethodWithParams_GenerateMultilineDocumentationWithoutParamsAndWithoutReturns()
         {
             TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
 
