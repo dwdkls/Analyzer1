@@ -125,18 +125,18 @@ namespace Analyzer1
                 GenericNameSyntax genericReturnType
                     when genericReturnType?.Identifier.ValueText is string genericTypeName =>
                         SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
-                            $"{Article(genericTypeName)} {BuildGenericTypeName(genericTypeName, genericReturnType)} value.")),
+                            $"{Article(genericTypeName)} {GetTypeName(genericReturnType)} value.")),
 
                 ArrayTypeSyntax arrayType
                     when arrayType.ElementType.ToFullString() is string arrayTypeName =>
                         SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
-                            $"An array of {arrayTypeName} value.")),
+                            $"An {GetTypeName(arrayType)} value.")),
 
                 _ => null,
             };
         }
 
-        private static string BuildGenericTypeName(string rootName, TypeSyntax type)
+        private static string GetTypeName(TypeSyntax type)
         {
             return type switch
             {
@@ -145,9 +145,9 @@ namespace Analyzer1
                 IdentifierNameSyntax returnType => returnType.Identifier.ValueText,
 
                 GenericNameSyntax generic =>
-                    $"{generic?.Identifier.ValueText} of {string.Join(" and ", generic.TypeArgumentList.Arguments.Select(a => BuildGenericTypeName(rootName, a)))}",
+                    $"{generic?.Identifier.ValueText} of {string.Join(" and ", generic.TypeArgumentList.Arguments.Select(a => GetTypeName(a)))}",
 
-                ArrayTypeSyntax arrayType => $"array of {arrayType.ElementType}",
+                ArrayTypeSyntax arrayType => $"array of {GetTypeName(arrayType.ElementType)}",
 
                 _ => string.Empty,
             };

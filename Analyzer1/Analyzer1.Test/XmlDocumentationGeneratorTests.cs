@@ -181,7 +181,6 @@ namespace Analyzer1.Test
             actual.Should().Be(expected);
         }
 
-
         [Fact]
         public void ArrayOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
         {
@@ -221,6 +220,49 @@ namespace Analyzer1.Test
 /// MyTestMethod
 /// </summary>
 /// <returns>A List of List of List of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ListOfArrayOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            TypeSyntax arrayOfInt = SyntaxFactory.ArrayType(SyntaxFactory.ParseTypeName("int"));
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { arrayOfInt }))
+            );
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A List of array of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ArrayOfListOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            TypeSyntax genericListOfInt = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
+            var returnType = SyntaxFactory.ArrayType(genericListOfInt);
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>An array of List of int value.</returns>
 ";
 
             var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
