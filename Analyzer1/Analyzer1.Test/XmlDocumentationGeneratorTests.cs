@@ -51,7 +51,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>An int value.</returns>
+/// <returns>An int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -68,7 +68,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A string value.</returns>
+/// <returns>A string.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -85,7 +85,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A MyClass value.</returns>
+/// <returns>A MyClass.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -105,7 +105,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A List of int value.</returns>
+/// <returns>A List of int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -126,7 +126,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A Dictionary of string and int value.</returns>
+/// <returns>A Dictionary of string and int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -148,7 +148,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A Dictionary of string and array of int value.</returns>
+/// <returns>A Dictionary of string and array of int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -172,7 +172,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A Dictionary of string and List of int value.</returns>
+/// <returns>A Dictionary of string and List of int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -190,7 +190,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>An array of int value.</returns>
+/// <returns>An array of int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -218,7 +218,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A List of List of List of int value.</returns>
+/// <returns>A List of List of List of int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -240,7 +240,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A List of array of int value.</returns>
+/// <returns>A List of array of int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -261,7 +261,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>An array of List of int value.</returns>
+/// <returns>An array of List of int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -285,7 +285,7 @@ public class XmlDocumentationGeneratorTests
         string expected = @"/// <summary>
 /// MyTestMethod
 /// </summary>
-/// <returns>A List of Dictionary of string and int value.</returns>
+/// <returns>A List of Dictionary of string and int.</returns>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
@@ -321,5 +321,5 @@ public class XmlDocumentationGeneratorTests
 /// <param name="str">Describe parameter.</param>
 /// <param name="num">Describe parameter.</param>
 /// <param name="ptr">Describe parameter.</param>
-/// <returns>Describe return value.</returns>
+/// <returns>Describe return.</returns>
 /// */

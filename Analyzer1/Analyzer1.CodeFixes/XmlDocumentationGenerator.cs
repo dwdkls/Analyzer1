@@ -76,7 +76,7 @@ public static class XmlDocumentationGenerator
 
         var typeAsString = GetTypeName(type);
 
-        return SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{Article(typeAsString)} {typeAsString} value."));
+        return SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{Article(typeAsString)} {typeAsString}."));
     }
 
     private static string GetTypeName(TypeSyntax type)
