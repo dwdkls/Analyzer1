@@ -1,168 +1,106 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Analyzer1
+namespace Analyzer1;
+
+public static class XmlDocumentationGenerator
 {
-    public static class XmlDocumentationGenerator
+    private static readonly string VoidTypeName = typeof(void).Name.ToLowerInvariant();
+
+    private static XmlTextSyntax NewLine => SyntaxFactory.XmlNewLine(Environment.NewLine);
+
+    public static DocumentationCommentTriviaSyntax ForType(TypeDeclarationSyntax declaration)
     {
-        private static readonly string VoidTypeName = typeof(void).Name.ToLowerInvariant();
+        var summary = SyntaxFactory.XmlSummaryElement(
+            SyntaxFactory.XmlNewLine(Environment.NewLine),
+            SyntaxFactory.XmlText(declaration.Identifier.Text),
+            SyntaxFactory.XmlNewLine(Environment.NewLine)
+        );
 
-        public static DocumentationCommentTriviaSyntax ForType(TypeDeclarationSyntax declaration)
+        return SyntaxFactory.DocumentationComment(summary)
+            .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+    }
+
+    #region SO code
+    /* var testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
+            SyntaxKind.SingleLineDocumentationCommentTrivia, SyntaxFactory.List(new XmlNodeSyntax[] { SyntaxFactory.XmlText()
+            .WithTextTokens(SyntaxFactory.TokenList(
+                SyntaxFactory.XmlTextLiteral(
+                    SyntaxFactory.TriviaList(SyntaxFactory.DocumentationCommentExterior("///")), " ", " ", SyntaxFactory.TriviaList()))),
+                SyntaxFactory.XmlElement(
+                        SyntaxFactory.XmlElementStartTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))),
+                        SyntaxFactory.XmlElementEndTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))))
+                    .WithContent(SyntaxFactory.SingletonList<XmlNodeSyntax>(
+                        SyntaxFactory.XmlText().WithTextTokens(SyntaxFactory.TokenList(
+                            SyntaxFactory.XmlTextLiteral(SyntaxFactory.TriviaList(), className, className, SyntaxFactory.TriviaList()))))),
+                SyntaxFactory.XmlText()
+                    .WithTextTokens(SyntaxFactory.TokenList(
+                        SyntaxFactory.XmlTextNewLine(SyntaxFactory.TriviaList(), Environment.NewLine, Environment.NewLine, SyntaxFactory.TriviaList()))) }));
+
+        return testDocumentation;
+    */
+    #endregion
+
+    public static DocumentationCommentTriviaSyntax ForMethod(MethodDeclarationSyntax declaration)
+    {
+        var summary = SyntaxFactory.XmlSummaryElement(
+            SyntaxFactory.XmlNewLine(Environment.NewLine),
+            SyntaxFactory.XmlText(declaration.Identifier.Text),
+            SyntaxFactory.XmlNewLine(Environment.NewLine)
+        );
+
+        var returns = BuildReturns(declaration.ReturnType);
+
+        var documentation = returns != null
+            ? SyntaxFactory.DocumentationComment(summary, NewLine, returns)
+            : SyntaxFactory.DocumentationComment(summary);
+
+        return documentation.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+    }
+
+    private static XmlElementSyntax BuildReturns(TypeSyntax type)
+    {
+        bool IsValidReturnType(string typeName) => typeName != null && typeName != VoidTypeName;
+
+        bool IsVowel(char c) => c != default && "aeiouAEIOU".IndexOf(c) >= 0;
+
+        string Article(string s) => IsVowel(s.FirstOrDefault()) ? "An" : "A";
+
+        if (!IsValidReturnType(type.ToString()))
         {
-            var summary = SyntaxFactory.XmlSummaryElement(
-                SyntaxFactory.XmlNewLine(Environment.NewLine),
-                SyntaxFactory.XmlText(declaration.Identifier.Text),
-                SyntaxFactory.XmlNewLine(Environment.NewLine)
-            );
-
-            return SyntaxFactory.DocumentationComment(summary)
-                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+            return null;
         }
 
-        #region SO code
-        /* var testDocumentation = SyntaxFactory.DocumentationCommentTrivia(
-                SyntaxKind.SingleLineDocumentationCommentTrivia, SyntaxFactory.List(new XmlNodeSyntax[] { SyntaxFactory.XmlText()
-                .WithTextTokens(SyntaxFactory.TokenList(
-                    SyntaxFactory.XmlTextLiteral(
-                        SyntaxFactory.TriviaList(SyntaxFactory.DocumentationCommentExterior("///")), " ", " ", SyntaxFactory.TriviaList()))),
-                    SyntaxFactory.XmlElement(
-                            SyntaxFactory.XmlElementStartTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))),
-                            SyntaxFactory.XmlElementEndTag(SyntaxFactory.XmlName(SyntaxFactory.Identifier("summary"))))
-                        .WithContent(SyntaxFactory.SingletonList<XmlNodeSyntax>(
-                            SyntaxFactory.XmlText().WithTextTokens(SyntaxFactory.TokenList(
-                                SyntaxFactory.XmlTextLiteral(SyntaxFactory.TriviaList(), className, className, SyntaxFactory.TriviaList()))))),
-                    SyntaxFactory.XmlText()
-                        .WithTextTokens(SyntaxFactory.TokenList(
-                            SyntaxFactory.XmlTextNewLine(SyntaxFactory.TriviaList(), Environment.NewLine, Environment.NewLine, SyntaxFactory.TriviaList()))) }));
+        var typeAsString = GetTypeName(type);
 
-            return testDocumentation;
-        */
-        #endregion
+        return SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{Article(typeAsString)} {typeAsString} value."));
+    }
 
-        public static DocumentationCommentTriviaSyntax ForMethod(MethodDeclarationSyntax declaration)
+    private static string GetTypeName(TypeSyntax type)
+    {
+        return type switch
         {
-            var summary = SyntaxFactory.XmlSummaryElement(
-                SyntaxFactory.XmlNewLine(Environment.NewLine),
-                SyntaxFactory.XmlText(declaration.Identifier.Text),
-                SyntaxFactory.XmlNewLine(Environment.NewLine)
-            );
+            PredefinedTypeSyntax predefined => predefined.Keyword.ValueText,
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+            GenericNameSyntax generic =>
+                $"{generic?.Identifier.ValueText} of {string.Join(" and ", generic.TypeArgumentList.Arguments.Select(GetTypeName))}",
+            ArrayTypeSyntax arrayType => $"array of {GetTypeName(arrayType.ElementType)}",
+            _ => string.Empty,
+        };
+    }
 
-            //var returnType = declaration.ReturnType as TypeSyntax;
-            //var returnTypeName = returnType.Keyword.ValueText;
+    public static DocumentationCommentTriviaSyntax ForProperty(PropertyDeclarationSyntax declaration)
+    {
+        var summary = SyntaxFactory.XmlSummaryElement(
+           SyntaxFactory.XmlNewLine(Environment.NewLine),
+           SyntaxFactory.XmlText(declaration.Identifier.Text),
+           SyntaxFactory.XmlNewLine(Environment.NewLine)
+       );
 
-            // ((Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax)declaration.ReturnType).Identifier
-
-
-            XmlElementSyntax returns = BuildReturns(declaration.ReturnType);
-
-
-            //if (declaration.ReturnType is IdentifierNameSyntax returnType)
-            //{
-            //    var returnTypeName = returnType.Identifier.ValueText;
-
-            //    if (IsValidReturnType(returnTypeName))
-            //    {
-            //        var article = IsVowel(returnTypeName[0]) ? "An" : "A";
-
-            //        var returns = SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{article} {returnTypeName} value."));
-
-            //        return SyntaxFactory.DocumentationComment(
-            //            summary,
-            //            SyntaxFactory.XmlNewLine(Environment.NewLine),
-            //            returns)
-            //            .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-            //    }
-            //}
-            //else if (declaration.ReturnType is GenericNameSyntax genericReturnType)
-            //{
-            //    var genericTypeName = genericReturnType?.Identifier.ValueText;
-            //    var argumentTypeNames = string.Join("and ", genericReturnType.TypeArgumentList.Arguments);
-
-            //    var article = IsVowel(genericTypeName[0]) ? "An" : "A";
-
-            //    var returns = SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{article} {genericTypeName} of {argumentTypeNames} value."));
-
-            //    return SyntaxFactory.DocumentationComment(
-            //        summary,
-            //        SyntaxFactory.XmlNewLine(Environment.NewLine),
-            //        returns)
-            //        .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-            //}
-
-
-            if (returns != null)
-            {
-                return SyntaxFactory.DocumentationComment(
-                        summary,
-                        SyntaxFactory.XmlNewLine(Environment.NewLine),
-                        returns)
-                        .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-            }
-
-            return SyntaxFactory.DocumentationComment(summary)
-                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-        }
-
-        private static XmlElementSyntax BuildReturns(TypeSyntax type)
-        {
-            bool IsValidReturnType(string typeName) => typeName != null && typeName != VoidTypeName;
-
-            bool IsVowel(char c) => c != default && "aeiouAEIOU".IndexOf(c) >= 0;
-
-            string Article(string s) => IsVowel(s.FirstOrDefault()) ? "An" : "A";
-
-            return type switch
-            {
-                IdentifierNameSyntax returnType
-                    when returnType.Identifier.ValueText is string returnTypeName && IsValidReturnType(returnTypeName) =>
-                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
-                            $"{Article(returnTypeName)} {returnTypeName} value.")),
-
-                GenericNameSyntax genericReturnType
-                    when genericReturnType?.Identifier.ValueText is string genericTypeName =>
-                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
-                            $"{Article(genericTypeName)} {GetTypeName(genericReturnType)} value.")),
-
-                ArrayTypeSyntax arrayType
-                    when arrayType.ElementType.ToFullString() is string arrayTypeName =>
-                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
-                            $"An {GetTypeName(arrayType)} value.")),
-
-                _ => null,
-            };
-        }
-
-        private static string GetTypeName(TypeSyntax type)
-        {
-            return type switch
-            {
-                PredefinedTypeSyntax predefined => predefined.Keyword.ValueText,
-
-                IdentifierNameSyntax returnType => returnType.Identifier.ValueText,
-
-                GenericNameSyntax generic =>
-                    $"{generic?.Identifier.ValueText} of {string.Join(" and ", generic.TypeArgumentList.Arguments.Select(a => GetTypeName(a)))}",
-
-                ArrayTypeSyntax arrayType => $"array of {GetTypeName(arrayType.ElementType)}",
-
-                _ => string.Empty,
-            };
-        }
-
-        public static DocumentationCommentTriviaSyntax ForProperty(PropertyDeclarationSyntax declaration)
-        {
-            var summary = SyntaxFactory.XmlSummaryElement(
-               SyntaxFactory.XmlNewLine(Environment.NewLine),
-               SyntaxFactory.XmlText(declaration.Identifier.Text),
-               SyntaxFactory.XmlNewLine(Environment.NewLine)
-           );
-
-            return SyntaxFactory.DocumentationComment(summary)
-                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
-        }
+        return SyntaxFactory.DocumentationComment(summary)
+            .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
     }
 }
