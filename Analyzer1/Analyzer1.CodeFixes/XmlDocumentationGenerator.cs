@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -56,26 +57,7 @@ namespace Analyzer1
             // ((Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax)declaration.ReturnType).Identifier
 
 
-            bool IsValidReturnType(string typeName) => typeName != null && typeName != VoidTypeName;
-
-            bool IsVowel(char c) => c != default && "aeiouAEIOU".IndexOf(c) >= 0;
-
-            string Article(string s) => IsVowel(s.FirstOrDefault()) ? "An" : "A";
-
-            XmlElementSyntax returns = declaration.ReturnType switch
-            {
-                IdentifierNameSyntax returnType
-                    when returnType.Identifier.ValueText is string returnTypeName && IsValidReturnType(returnTypeName) =>
-                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
-                            $"{Article(returnTypeName)} {returnTypeName} value.")),
-
-                GenericNameSyntax genericReturnType
-                    when genericReturnType?.Identifier.ValueText is string genericTypeName =>
-                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
-                            $"{Article(genericTypeName)} {genericTypeName} of {string.Join("and ", genericReturnType.TypeArgumentList.Arguments)} value.")),
-
-                _ => null,
-            };
+            XmlElementSyntax returns = BuildReturns(declaration.ReturnType);
 
 
             //if (declaration.ReturnType is IdentifierNameSyntax returnType)
@@ -123,6 +105,52 @@ namespace Analyzer1
 
             return SyntaxFactory.DocumentationComment(summary)
                 .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        }
+
+        private static XmlElementSyntax BuildReturns(TypeSyntax type)
+        {
+            bool IsValidReturnType(string typeName) => typeName != null && typeName != VoidTypeName;
+
+            bool IsVowel(char c) => c != default && "aeiouAEIOU".IndexOf(c) >= 0;
+
+            string Article(string s) => IsVowel(s.FirstOrDefault()) ? "An" : "A";
+
+            return type switch
+            {
+                IdentifierNameSyntax returnType
+                    when returnType.Identifier.ValueText is string returnTypeName && IsValidReturnType(returnTypeName) =>
+                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
+                            $"{Article(returnTypeName)} {returnTypeName} value.")),
+
+                GenericNameSyntax genericReturnType
+                    when genericReturnType?.Identifier.ValueText is string genericTypeName =>
+                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
+                            $"{Article(genericTypeName)} {BuildGenericTypeName(genericTypeName, genericReturnType)} value.")),
+
+                ArrayTypeSyntax arrayType
+                    when arrayType.ElementType.ToFullString() is string arrayTypeName =>
+                        SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText(
+                            $"An array of {arrayTypeName} value.")),
+
+                _ => null,
+            };
+        }
+
+        private static string BuildGenericTypeName(string rootName, TypeSyntax type)
+        {
+            return type switch
+            {
+                PredefinedTypeSyntax predefined => predefined.Keyword.ValueText,
+
+                IdentifierNameSyntax returnType => returnType.Identifier.ValueText,
+
+                GenericNameSyntax generic =>
+                    $"{generic?.Identifier.ValueText} of {string.Join(" and ", generic.TypeArgumentList.Arguments.Select(a => BuildGenericTypeName(rootName, a)))}",
+
+                ArrayTypeSyntax arrayType => $"array of {arrayType.ElementType}",
+
+                _ => string.Empty,
+            };
         }
 
         public static DocumentationCommentTriviaSyntax ForProperty(PropertyDeclarationSyntax declaration)

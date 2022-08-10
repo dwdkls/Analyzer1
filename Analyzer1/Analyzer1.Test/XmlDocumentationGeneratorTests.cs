@@ -10,7 +10,7 @@ namespace Analyzer1.Test
     public class XmlDocumentationGeneratorTests
     {
         [Fact]
-        public void ForClass_GenerateMultilineDocumentation()
+        public void Class_GenerateMultilineDocumentation()
         {
             var typeDeclaration = SyntaxFactory.TypeDeclaration(SyntaxKind.ClassDeclaration, "MyTestClass");
 
@@ -26,7 +26,7 @@ namespace Analyzer1.Test
 
 
         [Fact]
-        public void ForVoidMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        public void VoidMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
         {
             TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
 
@@ -43,7 +43,7 @@ namespace Analyzer1.Test
         }
 
         [Fact]
-        public void ForIntMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        public void IntMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
         {
             var returnType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("int"));
             var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
@@ -60,29 +60,7 @@ namespace Analyzer1.Test
         }
 
         [Fact]
-        public void ForListOfIntMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
-        {
-            var returnType = SyntaxFactory.GenericName(
-                SyntaxFactory.Identifier("List"),
-                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
-
-            SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("int"));
-            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
-
-
-            string expected = @"/// <summary>
-/// MyTestMethod
-/// </summary>
-/// <returns>A List of int value.</returns>
-";
-
-            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
-
-            actual.Should().Be(expected);
-        }
-
-        [Fact]
-        public void ForStringMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        public void StringMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
         {
             var returnType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("string"));
             var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
@@ -99,7 +77,7 @@ namespace Analyzer1.Test
         }
 
         [Fact]
-        public void ForMyClassMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
+        public void MyClassMethodWithoutParams_GenerateMultilineDocumentationWithoutParamsAndReturns()
         {
             var returnType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("MyClass"));
             var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
@@ -115,8 +93,164 @@ namespace Analyzer1.Test
             actual.Should().Be(expected);
         }
 
+
         [Fact]
-        public void ForVoidMethodWithParams_GenerateMultilineDocumentationWithoutParamsAndWithoutReturns()
+        public void ListOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A List of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void DictionaryOfStringAndIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("Dictionary"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(
+                    new[] { SyntaxFactory.ParseTypeName("string"), SyntaxFactory.ParseTypeName("int") })));
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A Dictionary of string and int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void DictionaryOfStringAndArrayOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            TypeSyntax arrayOfInt = SyntaxFactory.ArrayType(SyntaxFactory.ParseTypeName("int"));
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("Dictionary"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(
+                    new[] { SyntaxFactory.ParseTypeName("string"), arrayOfInt })));
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A Dictionary of string and array of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void DictionaryOfStringAndListOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            TypeSyntax genericListOfInt = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("Dictionary"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(
+                    new[] { SyntaxFactory.ParseTypeName("string"), genericListOfInt })));
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A Dictionary of string and List of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+
+        [Fact]
+        public void ArrayOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            var returnType = SyntaxFactory.ArrayType(SyntaxFactory.ParseTypeName("int"));
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>An array of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ListOfListOfIntMethodWithoutParams_GenerateProperGenericTypeReturns()
+        {
+            TypeSyntax genericListOfInt = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
+            TypeSyntax genericListOfListOfInt = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { genericListOfInt }))
+            );
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { genericListOfListOfInt }))
+            );
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A List of List of List of int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ListOfDictionaryOfStringAndIntMethodWithoutParams_GenerateProperGenericTypeReturn()
+        {
+            var returnType = SyntaxFactory.GenericName(
+                SyntaxFactory.Identifier("List"),
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
+
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
+
+            string expected = @"/// <summary>
+/// MyTestMethod
+/// </summary>
+/// <returns>A List of Dictionary of string and int value.</returns>
+";
+
+            var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();
+
+            actual.Should().Be(expected);
+        }
+
+
+        [Fact]
+        public void VoidMethodWithParams_GenerateMultilineDocumentationWithoutParamsAndWithoutReturns()
         {
             TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
 
