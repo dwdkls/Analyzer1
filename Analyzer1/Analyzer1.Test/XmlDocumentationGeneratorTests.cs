@@ -231,9 +231,13 @@ namespace Analyzer1.Test
         [Fact]
         public void ListOfDictionaryOfStringAndIntMethodWithoutParams_GenerateProperGenericTypeReturn()
         {
+            TypeSyntax dictionaryType = SyntaxFactory.GenericName(
+               SyntaxFactory.Identifier("Dictionary"),
+               SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(
+                   new[] { SyntaxFactory.ParseTypeName("string"), SyntaxFactory.ParseTypeName("int") })));
             var returnType = SyntaxFactory.GenericName(
                 SyntaxFactory.Identifier("List"),
-                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { SyntaxFactory.ParseTypeName("int") })));
+                SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(new[] { dictionaryType })));
 
             var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
@@ -250,7 +254,7 @@ namespace Analyzer1.Test
 
 
         [Fact]
-        public void VoidMethodWithParams_GenerateMultilineDocumentationWithoutParamsAndWithoutReturns()
+        public void VoidMethodWithParams_GenerateDocumentationWithoutParamsAndWithoutReturns()
         {
             TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
 
