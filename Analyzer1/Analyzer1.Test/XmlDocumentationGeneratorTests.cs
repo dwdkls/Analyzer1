@@ -12,10 +12,10 @@ public class XmlDocumentationGeneratorTests
     [Fact]
     public void Class_GenerateMultilineDocumentation()
     {
-        var typeDeclaration = SyntaxFactory.TypeDeclaration(SyntaxKind.ClassDeclaration, "MyTestClass");
+        var typeDeclaration = SyntaxFactory.TypeDeclaration(SyntaxKind.ClassDeclaration, "MyTestClassWithLongName");
 
         string expected = @"/// <summary>
-/// MyTestClass
+/// My Test Class With Long Name
 /// </summary>
 ";
 
@@ -33,7 +33,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(ts, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 ";
 
@@ -49,7 +49,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>An int.</returns>
 ";
@@ -66,7 +66,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A string.</returns>
 ";
@@ -83,7 +83,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A MyClass.</returns>
 ";
@@ -103,7 +103,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A List of int.</returns>
 ";
@@ -124,7 +124,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A Dictionary of string and int.</returns>
 ";
@@ -146,7 +146,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A Dictionary of string and array of int.</returns>
 ";
@@ -170,7 +170,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A Dictionary of string and List of int.</returns>
 ";
@@ -188,7 +188,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>An array of int.</returns>
 ";
@@ -216,7 +216,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A List of List of List of int.</returns>
 ";
@@ -238,7 +238,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A List of array of int.</returns>
 ";
@@ -259,7 +259,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>An array of List of int.</returns>
 ";
@@ -283,7 +283,7 @@ public class XmlDocumentationGeneratorTests
         var methodDeclaration = SyntaxFactory.MethodDeclaration(returnType, "MyTestMethod");
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <returns>A List of Dictionary of string and int.</returns>
 ";
@@ -304,7 +304,7 @@ public class XmlDocumentationGeneratorTests
                 SyntaxFactory.SeparatedList(new[] { SyntaxFactory.Parameter(SyntaxFactory.Identifier("testName")) })));
 
         string expected = @"/// <summary>
-/// MyTestMethod
+/// My Test Method
 /// </summary>
 /// <param name=""testName"">testName</param>
 /// <param name=""testAge"">testAge</param>

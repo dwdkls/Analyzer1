@@ -7,11 +7,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Analyzer1
 {
     // TODO: limit to controllers (ControllerBase & [ApiController])
-    // TODO: add support for generic return types
-    // TODO: add support for generic parameters
     // TODO: add classes & records which are used by controllers
-    // TODO: split member names into sentences
-    // TODO: return types 
+    // TODO: add support for generic parameters
     // TODO: try to create tests
     // TODO: publish as a package
 

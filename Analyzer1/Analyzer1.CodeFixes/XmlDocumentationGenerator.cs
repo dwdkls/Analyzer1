@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -14,9 +16,11 @@ public static class XmlDocumentationGenerator
 
     public static DocumentationCommentTriviaSyntax ForType(TypeDeclarationSyntax declaration)
     {
+        var summaryText = ToSentence(declaration.Identifier.Text);
+
         var summary = SyntaxFactory.XmlSummaryElement(
             SyntaxFactory.XmlNewLine(Environment.NewLine),
-            SyntaxFactory.XmlText(declaration.Identifier.Text),
+            SyntaxFactory.XmlText(summaryText),
             SyntaxFactory.XmlNewLine(Environment.NewLine)
         );
 
@@ -46,9 +50,11 @@ public static class XmlDocumentationGenerator
 
     public static DocumentationCommentTriviaSyntax ForMethod(MethodDeclarationSyntax declaration)
     {
+        var summaryText = ToSentence(declaration.Identifier.Text);
+
         var summary = SyntaxFactory.XmlSummaryElement(
             SyntaxFactory.XmlNewLine(Environment.NewLine),
-            SyntaxFactory.XmlText(declaration.Identifier.Text),
+            SyntaxFactory.XmlText(summaryText),
             SyntaxFactory.XmlNewLine(Environment.NewLine)
         );
 
@@ -102,5 +108,10 @@ public static class XmlDocumentationGenerator
 
         return SyntaxFactory.DocumentationComment(summary)
             .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+    }
+
+    private static string ToSentence(string PascalString)
+    {
+        return Regex.Replace(PascalString, "(?!^)([A-Z])", " $1");
     }
 }
