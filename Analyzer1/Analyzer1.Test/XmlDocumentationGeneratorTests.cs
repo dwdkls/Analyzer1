@@ -301,14 +301,18 @@ public class XmlDocumentationGeneratorTests
 
         var methodDeclaration = SyntaxFactory.MethodDeclaration(ts, "MyTestMethod")
             .WithParameterList(SyntaxFactory.ParameterList(
-                SyntaxFactory.SeparatedList(new[] { SyntaxFactory.Parameter(SyntaxFactory.Identifier("testName")) })));
+                SyntaxFactory.SeparatedList(new[] { 
+                    SyntaxFactory.Parameter(SyntaxFactory.Identifier("testString")),
+                    SyntaxFactory.Parameter(SyntaxFactory.Identifier("testInt")),
+                    SyntaxFactory.Parameter(SyntaxFactory.Identifier("testCustomClass")),
+                })));
 
         string expected = @"/// <summary>
 /// My Test Method
 /// </summary>
-/// <param name=""testName"">testName</param>
-/// <param name=""testAge"">testAge</param>
-/// <param name=""testCustomClass"">testCustomClass</param>
+/// <param name=""testString"">A Test String</param>
+/// <param name=""testInt"">A Test Int</param>
+/// <param name=""testCustomClass"">A Test Custom Class</param>
 ";
 
         var actual = XmlDocumentationGenerator.ForMethod(methodDeclaration).ToFullString();

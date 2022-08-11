@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,8 +12,6 @@ namespace Analyzer1;
 public static class XmlDocumentationGenerator
 {
     private static readonly string VoidTypeName = typeof(void).Name.ToLowerInvariant();
-
-    private static XmlTextSyntax NewLine => SyntaxFactory.XmlNewLine(Environment.NewLine);
 
     public static DocumentationCommentTriviaSyntax ForType(TypeDeclarationSyntax declaration)
     {
@@ -58,11 +57,30 @@ public static class XmlDocumentationGenerator
             SyntaxFactory.XmlNewLine(Environment.NewLine)
         );
 
-        var returns = BuildReturns(declaration.ReturnType);
+        var xmlNodes = new List<XmlNodeSyntax>();
+        xmlNodes.Add(summary);
 
-        var documentation = returns != null
-            ? SyntaxFactory.DocumentationComment(summary, NewLine, returns)
-            : SyntaxFactory.DocumentationComment(summary);
+        foreach (var item in declaration.ParameterList.ChildNodes())
+        {
+            var paramName = item.ToFullString();
+            var xmlElementSyntax = SyntaxFactory.XmlParamElement(paramName);
+
+            xmlNodes.Add(SyntaxFactory.XmlNewLine(Environment.NewLine));
+            xmlNodes.Add(xmlElementSyntax);
+        }
+
+        var returns = BuildReturns(declaration.ReturnType);
+        if (returns != null)
+        {
+            xmlNodes.Add(SyntaxFactory.XmlNewLine(Environment.NewLine));
+            xmlNodes.Add(returns);
+        }
+
+        //var documentation = returns != null
+        //    ? SyntaxFactory.DocumentationComment(summary, SyntaxFactory.XmlNewLine(Environment.NewLine), returns)
+        //    : SyntaxFactory.DocumentationComment(summary);
+
+        var documentation = SyntaxFactory.DocumentationComment(xmlNodes.ToArray());
 
         return documentation.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
     }
