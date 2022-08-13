@@ -15,7 +15,7 @@ public static class XmlDocumentationGenerator
 
     public static DocumentationCommentTriviaSyntax ForType(TypeDeclarationSyntax declaration)
     {
-        var summaryText = ToSentence(declaration.Identifier.Text);
+        var summaryText = ToSeparateWords(declaration.Identifier.Text);
 
         var summary = SyntaxFactory.XmlSummaryElement(
             SyntaxFactory.XmlNewLine(Environment.NewLine),
@@ -53,7 +53,7 @@ public static class XmlDocumentationGenerator
 
         var summary = SyntaxFactory.XmlSummaryElement(
             SyntaxFactory.XmlNewLine(Environment.NewLine),
-            SyntaxFactory.XmlText(ToSentence(declaration.Identifier.Text)),
+            SyntaxFactory.XmlText(ToSeparateWords(declaration.Identifier.Text)),
             SyntaxFactory.XmlNewLine(Environment.NewLine));
 
         xmlNodes.Add(summary);
@@ -77,7 +77,7 @@ public static class XmlDocumentationGenerator
     private static XmlElementSyntax BuildParameter(SyntaxNode item)
     {
         var paramName = (item as ParameterSyntax)?.Identifier.Text;
-        var paramDescription = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(ToSentence(paramName));
+        var paramDescription = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(ToSeparateWords(paramName));
         var paramDescXml = SyntaxFactory.XmlText($"{Article(paramDescription)} {paramDescription}");
 
         return SyntaxFactory.XmlParamElement(paramName, paramDescXml);
@@ -121,7 +121,7 @@ public static class XmlDocumentationGenerator
         return IsVowel(s.FirstOrDefault()) ? "An" : "A";
     }
 
-    private static string ToSentence(string s)
+    private static string ToSeparateWords(string s)
     {
         return Regex.Replace(s, "(?!^)([A-Z])", " $1");
     }
