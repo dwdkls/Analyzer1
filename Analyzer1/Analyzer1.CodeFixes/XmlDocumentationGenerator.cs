@@ -49,67 +49,58 @@ public static class XmlDocumentationGenerator
 
     public static DocumentationCommentTriviaSyntax ForMethod(MethodDeclarationSyntax declaration)
     {
-        var summaryText = ToSentence(declaration.Identifier.Text);
+        var xmlNodes = new List<XmlNodeSyntax>();
 
         var summary = SyntaxFactory.XmlSummaryElement(
             SyntaxFactory.XmlNewLine(Environment.NewLine),
-            SyntaxFactory.XmlText(summaryText),
-            SyntaxFactory.XmlNewLine(Environment.NewLine)
-        );
+            SyntaxFactory.XmlText(ToSentence(declaration.Identifier.Text)),
+            SyntaxFactory.XmlNewLine(Environment.NewLine));
 
-        var xmlNodes = new List<XmlNodeSyntax>();
         xmlNodes.Add(summary);
 
-        foreach (var item in declaration.ParameterList.ChildNodes())
-        {
-            var paramName = item.ToFullString();
-
-            var paramDescription = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(ToSentence(paramName));
-            var paramDescXml = SyntaxFactory.XmlText($"{Article(paramDescription)} {paramDescription}");
-
-            var xmlElementSyntax = SyntaxFactory.XmlParamElement(paramName, paramDescXml);
-
-            xmlNodes.Add(SyntaxFactory.XmlNewLine(Environment.NewLine));
-            xmlNodes.Add(xmlElementSyntax);
-        }
-
-        var returns = BuildReturns(declaration.ReturnType);
-        if (returns != null)
+        foreach (var parameter in declaration.ParameterList.ChildNodes())
         {
             xmlNodes.Add(SyntaxFactory.XmlNewLine(Environment.NewLine));
-            xmlNodes.Add(returns);
+            xmlNodes.Add(BuildParameter(parameter));
         }
 
-        var documentation = SyntaxFactory.DocumentationComment(xmlNodes.ToArray());
+        if (declaration.ReturnType.ToString() != VoidTypeName)
+        {
+            xmlNodes.Add(SyntaxFactory.XmlNewLine(Environment.NewLine));
+            xmlNodes.Add(BuildReturns(declaration.ReturnType));
+        }
 
-        return documentation.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        return SyntaxFactory.DocumentationComment(xmlNodes.ToArray())
+            .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+    }
+
+    private static XmlElementSyntax BuildParameter(SyntaxNode item)
+    {
+        var paramName = item.ToFullString();
+        var paramDescription = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(ToSentence(paramName));
+        var paramDescXml = SyntaxFactory.XmlText($"{Article(paramDescription)} {paramDescription}");
+
+        return SyntaxFactory.XmlParamElement(paramName, paramDescXml);
     }
 
     private static XmlElementSyntax BuildReturns(TypeSyntax type)
     {
-        if (type.ToString() == VoidTypeName)
+        string BuildTypeName(TypeSyntax type)
         {
-            return null;
+            return type switch
+            {
+                PredefinedTypeSyntax predefined => predefined.Keyword.ValueText,
+                IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+                GenericNameSyntax generic =>
+                    $"{generic?.Identifier.ValueText} of {string.Join(" and ", generic.TypeArgumentList.Arguments.Select(BuildTypeName))}",
+                ArrayTypeSyntax arrayType => $"array of {BuildTypeName(arrayType.ElementType)}",
+                _ => string.Empty,
+            };
         }
 
-        var typeAsString = BuildTypeName(type);
-
-        return SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{Article(typeAsString)} {typeAsString}."));
+        var typeDescription = BuildTypeName(type);
+        return SyntaxFactory.XmlReturnsElement(SyntaxFactory.XmlText($"{Article(typeDescription)} {typeDescription}."));
     }
-
-    private static string BuildTypeName(TypeSyntax type)
-    {
-        return type switch
-        {
-            PredefinedTypeSyntax predefined => predefined.Keyword.ValueText,
-            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
-            GenericNameSyntax generic =>
-                $"{generic?.Identifier.ValueText} of {string.Join(" and ", generic.TypeArgumentList.Arguments.Select(BuildTypeName))}",
-            ArrayTypeSyntax arrayType => $"array of {BuildTypeName(arrayType.ElementType)}",
-            _ => string.Empty,
-        };
-    }
-
 
     public static DocumentationCommentTriviaSyntax ForProperty(PropertyDeclarationSyntax declaration)
     {
