@@ -76,7 +76,7 @@ public static class XmlDocumentationGenerator
 
     private static XmlElementSyntax BuildParameter(SyntaxNode item)
     {
-        var paramName = item.ToFullString();
+        var paramName = (item as ParameterSyntax)?.Identifier.Text;
         var paramDescription = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(ToSentence(paramName));
         var paramDescXml = SyntaxFactory.XmlText($"{Article(paramDescription)} {paramDescription}");
 

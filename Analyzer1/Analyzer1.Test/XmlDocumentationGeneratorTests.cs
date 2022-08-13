@@ -297,14 +297,20 @@ public class XmlDocumentationGeneratorTests
     [Fact]
     public void VoidMethodWithParams_GenerateDocumentationWithoutParamsAndWithoutReturns()
     {
-        TypeSyntax ts = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
+        ParameterSyntax BuildParameter(string typeName, string paramName)
+        {
+            var type = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier(typeName));
+            return SyntaxFactory.Parameter(SyntaxFactory.Identifier(paramName)).WithType(type);
+        }
 
-        var methodDeclaration = SyntaxFactory.MethodDeclaration(ts, "MyTestMethod")
+        var voidType = SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("void"));
+
+        var methodDeclaration = SyntaxFactory.MethodDeclaration(voidType, "MyTestMethod")
             .WithParameterList(SyntaxFactory.ParameterList(
-                SyntaxFactory.SeparatedList(new[] { 
-                    SyntaxFactory.Parameter(SyntaxFactory.Identifier("testString")),
-                    SyntaxFactory.Parameter(SyntaxFactory.Identifier("testInt")),
-                    SyntaxFactory.Parameter(SyntaxFactory.Identifier("testCustomClass")),
+                SyntaxFactory.SeparatedList(new[] {
+                    BuildParameter("string", "testString"),
+                    BuildParameter("int", "testInt"),
+                    BuildParameter("CustomClas", "testCustomClass"),
                 })));
 
         string expected = @"/// <summary>
